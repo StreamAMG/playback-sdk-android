@@ -43,7 +43,7 @@ object PlayBackSDKManager {
         fetchPlayerInfo(completion)
     }
 
-    fun fetchPlayerInfo(completion: (String?, Throwable?) -> Unit) {
+    private fun fetchPlayerInfo(completion: (String?, Throwable?) -> Unit) {
         val playerInformationAPIExist = playerInformationAPI ?: run {
             completion(null, SDKError.InitializationError)
             return
