@@ -1,4 +1,4 @@
-package com.streamamg
+package com.streamamg.player.plugin
 
 object VideoPlayerPluginManager {
     internal var selectedPlugin: VideoPlayerPlugin? = null

@@ -1,4 +1,4 @@
-package com.streamamg
+package com.streamamg.player.plugin
 
 import android.view.View
 import androidx.compose.runtime.Composable

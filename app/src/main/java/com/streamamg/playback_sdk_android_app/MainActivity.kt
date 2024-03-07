@@ -15,11 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.streamamg.BitmovinVideoPlayerPlugin
 import com.streamamg.PlayBackSDKManager
 import com.streamamg.PlayBackSDKManager.loadPlayer
-import com.streamamg.VideoPlayerPluginManager
+import com.streamamg.player.plugin.VideoPlayerPluginManager
 import com.streamamg.playback_sdk_android_app.ui.theme.PlaybacksdkandroidTheme
+import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin
 
 class MainActivity : ComponentActivity() {
 
@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
         PlayBackSDKManager.initialize(apiKey) { _, _ -> }
 
         // Register plugin
-        val customPlugin = NativeMediaPlayerPlugin()
+        //val customPlugin = NativeMediaPlayerPlugin()
+        val customPlugin = BitmovinVideoPlayerPlugin()
         VideoPlayerPluginManager.registerPlugin(customPlugin)
 
         val entryId = "0_qt9cy11s"

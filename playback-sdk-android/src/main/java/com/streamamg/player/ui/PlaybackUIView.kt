@@ -1,8 +1,11 @@
-package com.streamamg
+package com.streamamg.player.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
+import com.streamamg.PlayBackAPIError
+import com.streamamg.PlayBackSDKManager
+import com.streamamg.player.plugin.VideoPlayerPluginManager
 
 internal class PlaybackUIView(
     private val entryId: String,

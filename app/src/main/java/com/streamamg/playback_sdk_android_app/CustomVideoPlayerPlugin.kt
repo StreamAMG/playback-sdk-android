@@ -9,7 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import com.streamamg.VideoPlayerPlugin
+import com.streamamg.player.plugin.VideoPlayerPlugin
 
 class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     private var mediaPlayer: MediaPlayer? = null

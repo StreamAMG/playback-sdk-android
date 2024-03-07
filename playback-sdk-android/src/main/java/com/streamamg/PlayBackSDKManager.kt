@@ -4,8 +4,9 @@ import PlayerInformationAPI
 import PlayerInformationAPIService
 import android.util.Log
 import androidx.compose.runtime.Composable
-import com.streamamg.playbacksdk.playbackapi.PlayBackAPI
-import com.streamamg.playbacksdk.playbackapi.PlayBackAPIService
+import com.streamamg.api.player.PlayBackAPI
+import com.streamamg.api.player.PlayBackAPIService
+import com.streamamg.player.ui.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

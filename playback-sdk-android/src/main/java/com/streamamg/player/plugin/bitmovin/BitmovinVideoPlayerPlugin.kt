@@ -1,4 +1,4 @@
-package com.streamamg
+package com.streamamg.player.plugin.bitmovin
 
 import android.view.View
 import androidx.compose.foundation.layout.Box
@@ -11,6 +11,7 @@ import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.api.source.SourceType
 import com.streamamg.playback_sdk_android.R
+import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
 class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {

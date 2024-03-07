@@ -1,4 +1,4 @@
-package com.streamamg.playbacksdk.playbackapi
+package com.streamamg.api.player
 
 import kotlinx.coroutines.flow.Flow
 

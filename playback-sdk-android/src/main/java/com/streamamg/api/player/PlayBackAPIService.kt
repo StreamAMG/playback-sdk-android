@@ -1,4 +1,4 @@
-package com.streamamg.playbacksdk.playbackapi
+package com.streamamg.api.player
 
 import com.streamamg.PlayBackAPIError
 import com.streamamg.PlayBackSDKManager
