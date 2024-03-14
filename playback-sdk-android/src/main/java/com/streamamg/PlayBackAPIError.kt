@@ -4,6 +4,9 @@ sealed class SDKError : Throwable() {
     object InitializationError : SDKError()
     object MissingLicense : SDKError()
     object LoadHLSStreamError : SDKError()
+
+    object FetchBitmovinLicenseError : SDKError()
+
 }
 
 sealed class PlayBackAPIError : Throwable() {

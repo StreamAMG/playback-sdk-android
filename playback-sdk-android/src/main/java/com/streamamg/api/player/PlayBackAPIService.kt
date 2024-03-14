@@ -57,11 +57,11 @@ internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
                     emit(responseModel)
                 } else {
                     // TODO: handle error
-//                    val errorResponse = connection.errorStream?.let {
-//                        Json.decodeFromString<ErrorResponse>(it.reader().readText())
-//                    }
-//                    val errorMessage = errorResponse?.message ?: "Unknown authentication error"
-//                    throw PlayBackAPIError.apiError(connection.responseCode, errorMessage)
+                    val errorResponse = connection.errorStream?.let {
+                        Json.decodeFromString<ErrorResponse>(it.reader().readText())
+                    }
+                    val errorMessage = errorResponse?.message ?: "Unknown authentication error"
+                    throw PlayBackAPIError.apiError(connection.responseCode, errorMessage)
                 }
             } catch (e: IOException) {
                 throw PlayBackAPIError.NetworkError(e)

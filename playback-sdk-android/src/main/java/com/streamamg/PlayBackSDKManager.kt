@@ -7,26 +7,53 @@ import androidx.compose.runtime.Composable
 import com.streamamg.api.player.PlayBackAPI
 import com.streamamg.api.player.PlayBackAPIService
 import com.streamamg.player.ui.PlaybackUIView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.firstOrNull
 import java.net.URL
 
+/**
+ * Singleton object to manage playback SDK functionalities.
+ */
 object PlayBackSDKManager {
-    private var playBackAPI: PlayBackAPI? = null
-    private var playerInformationAPI: PlayerInformationAPI? = null
-    private var bitmovinLicense: String? = null
-    private var amgAPIKey: String? = null
-    internal var baseURL = "https://api.playback.streamamg.com/v1"
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private var playBackAPIService: PlayBackAPIService? = null
 
+    //region Properties
+
+    //region Private Properties
+
+    private lateinit var playBackAPI: PlayBackAPI
+    private lateinit var playerInformationAPI: PlayerInformationAPI
+
+    private lateinit var amgAPIKey: String
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private lateinit var playBackAPIService: PlayBackAPIService
+
+    //endregion
+
+    //region Internal Properties
+
+    /**
+     * Base URL for the playback API.
+     */
+    internal var baseURL = "https://api.playback.streamamg.com/v1"
+    internal lateinit var bitmovinLicense: String
+    //endregion
+
+    //endregion
+
+    //region Public methods
+
+    //region Initialization
+
+    /**
+     * Initializes the playback SDK.
+     * @param apiKey The API key for authentication.
+     * @param baseURL The base URL for the playback API. Default is null.
+     * @param completion Callback to be invoked upon completion of initialization.
+     */
     fun initialize(
         apiKey: String,
         baseURL: String? = null,
-        completion: (String?, Throwable?) -> Unit
+        completion: (String?, SDKError?) -> Unit
     ) {
         if (apiKey.isEmpty()) {
             completion(null, SDKError.InitializationError)
@@ -39,94 +66,113 @@ object PlayBackSDKManager {
         playBackAPIService = PlayBackAPIService(apiKey)
         this.playBackAPI = playBackAPIService
 
-        // Fetching Bitmovin license
+        // Fetching player information
         fetchPlayerInfo(completion)
     }
 
-    private fun fetchPlayerInfo(completion: (String?, Throwable?) -> Unit) {
-        val playerInformationAPIExist = playerInformationAPI ?: run {
-            completion(null, SDKError.InitializationError)
-            return
-        }
-        coroutineScope.launch {
-            try {
-                val playerInfo = playerInformationAPIExist.getPlayerInformation().first()
+    //endregion
 
-                // Check if playerInfo is null before accessing its properties
-                if (playerInfo?.player?.bitmovin?.license.isNullOrEmpty()) {
-                    completion(null, SDKError.MissingLicense)
-                    return@launch
-                }
+    //region Load Player
 
-                // Extract the Bitmovin license
-                val bitmovinLicense = playerInfo?.player?.bitmovin?.license
-
-                // Set the received Bitmovin license
-                this@PlayBackSDKManager.bitmovinLicense = bitmovinLicense
-
-                // Log success message
-                Log.d(
-                    "PlayBackSDKManager",
-                    "Bitmovin license fetched successfully: $bitmovinLicense"
-                )
-
-                // Call the completion handler with success
-                completion(bitmovinLicense, null)
-            } catch (e: Throwable) {
-                Log.e("PlayBackSDKManager", "Error fetching Bitmovin license: $e")
-                completion(null, e)
-            }
-        }
-    }
-
-    fun loadHLSStream(
-        entryId: String,
-        authorizationToken: String?,
-        completion: (URL?, SDKError?) -> Unit
-    ) {
-        val playBackAPIExist = playBackAPI ?: run {
-            completion(null, SDKError.InitializationError)
-            return
-        }
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val videoDetails =
-                    playBackAPIExist.getVideoDetails(entryId, authorizationToken).first()
-
-                // Log received video details
-                Log.d("PlayBackSDKManager", "Received video details: $videoDetails")
-
-                // Extract the HLS stream URL from video details
-                val hlsURLString = videoDetails.media?.hls
-                val hlsURL = hlsURLString?.let { URL(it) }
-
-                if (hlsURL != null) {
-                    // Call the completion handler with the HLS stream URL
-                    completion(hlsURL, null)
-                } else {
-                    completion(null, SDKError.LoadHLSStreamError)
-                }
-            } catch (e: Throwable) {
-                Log.e("PlayBackSDKManager", "Error loading HLS stream: $e")
-                completion(null, SDKError.InitializationError) //TODO: add correct error
-            }
-        }
-    }
-
-
+    /**
+     * Loads the player UI.
+     * @param entryID The ID of the entry.
+     * @param authorizationToken The authorization token.
+     * @param onError Callback for handling errors. Default is null.
+     * @return Composable function to render the player UI.
+     */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String,
         onError: ((PlayBackAPIError) -> Unit)?
     ): @Composable () -> Unit {
-
         val playbackUIView = PlaybackUIView(entryID, authorizationToken, onError)
 
-        // Return a Composable function that renders the playback UI
         return {
             playbackUIView.Render()
         }
-
     }
+
+    //endregion
+
+    //endregion
+
+    //region Internal methods
+
+    //region Player Information
+
+    /**
+     * Fetches player information including Bitmovin license.
+     * @param completion Callback to be invoked upon completion of fetching player information.
+     */
+    private fun fetchPlayerInfo(completion: (String?, SDKError?) -> Unit) {
+        coroutineScope.launch {
+            try {
+                val playerInfo = playerInformationAPI.getPlayerInformation().firstOrNull()
+
+                if (playerInfo?.player?.bitmovin?.license.isNullOrEmpty()) {
+                    completion(null, SDKError.MissingLicense)
+                    return@launch
+                }
+
+                val bitmovinLicense = playerInfo?.player?.bitmovin?.license
+
+                this@PlayBackSDKManager.bitmovinLicense = bitmovinLicense ?: run {
+                    completion(null, SDKError.MissingLicense)
+                    return@launch
+                }
+
+                Log.d(
+                    "PlayBackSDKManager",
+                    "Bitmovin license fetched successfully: $bitmovinLicense"
+                )
+
+                completion(bitmovinLicense, null)
+            } catch (e: Throwable) {
+                Log.e("PlayBackSDKManager", "Error fetching Bitmovin license: $e")
+                completion(null, SDKError.FetchBitmovinLicenseError)
+            }
+        }
+    }
+
+    //endregion
+
+    //region HLS Stream
+
+    /**
+     * Loads the HLS stream.
+     * @param entryId The ID of the entry.
+     * @param authorizationToken The authorization token.
+     * @param completion Callback to be invoked upon completion of loading the HLS stream.
+     */
+    fun loadHLSStream(
+        entryId: String,
+        authorizationToken: String?,
+        completion: (URL?, SDKError?) -> Unit
+    ) {
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val videoDetails =
+                    playBackAPI.getVideoDetails(entryId, authorizationToken).firstOrNull()
+
+                val hlsURLString = videoDetails?.media?.hls
+                val hlsURL = hlsURLString?.let { URL(it) }
+
+                if (hlsURL != null) {
+                    completion(hlsURL, null)
+                } else {
+                    completion(null, SDKError.LoadHLSStreamError)
+                }
+            } catch (e: Throwable) {
+                Log.e("PlayBackSDKManager", "Error loading HLS stream: $e")
+                completion(null, SDKError.LoadHLSStreamError)
+            }
+        }
+    }
+
+    //endregion
+
+    //endregion
+
 }
