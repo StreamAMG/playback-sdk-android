@@ -3,6 +3,7 @@ package com.streamamg.player.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.streamamg.PlayBackAPIError
 import com.streamamg.PlayBackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager
@@ -24,13 +25,11 @@ internal class PlaybackUIView(
 
         Box() {
             if (!hasFetchedVideoDetails) {
-                // TODO: Add indicator
-                // Show loading indicator
-                // You can implement a loading indicator here
+                // TODO: Add loading indicator
             } else {
                 videoURL?.let { url ->
                     pluginManager.selectedPlugin?.let { plugin ->
-                        plugin.playerView(url)
+                        plugin.PlayerView(url)
                     }
                 } ?: run {
                     // TODO: Handle null video URL (Error UI View)

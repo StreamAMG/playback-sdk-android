@@ -39,7 +39,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     }
 
     @Composable
-    override fun playerView(hlsUrl: String): Unit {
+    override fun PlayerView(hlsUrl: String): Unit {
         this.hlsUrl = hlsUrl
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         val observers = remember { mutableListOf<DefaultLifecycleObserver>() }
