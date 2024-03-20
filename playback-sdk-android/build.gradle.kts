@@ -1,7 +1,15 @@
+import org.jetbrains.dokka.gradle.DokkaTask
+import java.net.URL
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
+    id("org.jetbrains.dokka") version "1.9.20" apply true
+}
+
+subprojects {
+    apply(plugin = "org.jetbrains.dokka")
 }
 
 android {
@@ -42,6 +50,30 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+}
+tasks.dokkaGfm {
+    outputDirectory.set(layout.projectDirectory.dir("docs/"))
+}
+tasks.dokkaHtmlPartial {
+    outputDirectory.set(layout.projectDirectory.dir("docs/"))
+}
+
+tasks.withType<DokkaTask>().configureEach {
+    moduleName.set(project.name)
+    moduleVersion.set(project.version.toString())
+    outputDirectory.set(layout.buildDirectory.dir("dokka/$name"))
+    failOnWarning.set(false)
+    suppressObviousFunctions.set(true)
+    suppressInheritedMembers.set(false)
+    offlineMode.set(false)
+    dokkaSourceSets.configureEach {
+        externalDocumentationLink {
+            url.set(URL("https://www.streamamg.com/"))
+            packageListUrl.set(
+                rootProject.projectDir.resolve("serialization.package.list").toURL()
+            )
+        }
     }
 }
 
