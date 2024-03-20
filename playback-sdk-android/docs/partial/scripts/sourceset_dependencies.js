@@ -1,0 +1,1 @@
+{"@class":"org.jetbrains.dokka.base.templating.AddToSourcesetDependencies","moduleName":"playback-sdk-android","content":{":playback-sdk-android:dokkaHtmlPartial/debug":[],":playback-sdk-android:dokkaHtmlPartial/main":[],":playback-sdk-android:dokkaHtmlPartial/release":[]}}
