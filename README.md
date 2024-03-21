@@ -32,13 +32,12 @@ To initialize the playback SDK, use the `initialize` method of the `PlayBackSDKM
 Example:
 
 ```kotlin
-PlayBackSDKManager.initialize(apiKey) { bitmovinLicense, error ->
-    if (error != null) {
-        // Handle initialization error
-    } else {
-        // SDK initialized successfully
+    // Initialize SDK with the settings
+    PlayBackSDKManager.initialize("<API_KEY>") { license, error ->
+        // Register default layer plugin 
+        val customPlugin = BitmovinVideoPlayerPlugin()
+        VideoPlayerPluginManager.registerPlugin(customPlugin)
     }
-}
 ```
 
 
@@ -52,24 +51,6 @@ Example:
 val playerUI = PlayBackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
 // Handle player UI error 
 } 
-
-// In your Composable 
-function playerUI()
-```
-
-# Loading HLS Stream
-
-To load an HLS stream, use the `loadHLSStream` method of the `PlayBackSDKManager` singleton object. This method requires the entry ID of the video and an authorization token.
-
-Example:
-
-```
-PlayBackSDKManager.loadHLSStream(entryId, authorizationToken) { hlsURL, error -> if(error != null) { 
-    // Handle HLS stream loading error 
-    } else { 
-    // HLS stream loaded successfully, use hlsURL 
-    } 
-}
 ```
 
 # Error Handling
