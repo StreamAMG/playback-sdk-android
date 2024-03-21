@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 /**
  * Represents the error response received from the playback API.
  */
-data class ErrorResponse(val message: String) // Example: Assuming ErrorResponse has a message property
+data class ErrorResponse(val message: String)
 
 
 /**
