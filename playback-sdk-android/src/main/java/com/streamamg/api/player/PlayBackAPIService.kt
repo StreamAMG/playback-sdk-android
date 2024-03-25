@@ -8,6 +8,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.serialization.json.Json
+import java.io.BufferedReader
 
 /**
  * Represents the error response received from the playback API.
@@ -38,36 +39,51 @@ internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
      * @param authorizationToken Optional authorization token, can be null for free videos.
      * @return A Flow emitting the response model or an error.
      */
-    override suspend fun getVideoDetails(entryId: String, authorizationToken: String?): Flow<PlaybackResponseModel> {
-        return flow {
-            val url = URL("${PlayBackSDKManager.baseURL}/entry/$entryId")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.setRequestProperty("Accept", "application/json")
-            connection.setRequestProperty("x-api-key", apiKey)
-
-            // JWT Token can be null for free videos.
-            if (!authorizationToken.isNullOrEmpty()) {
-                connection.setRequestProperty("Authorization", "Bearer $authorizationToken")
-            }
-
+    override suspend fun getVideoDetails(
+        entryId: String,
+        authorizationToken: String?
+    ): Flow<PlaybackResponseModel> = flow {
+        val url = URL("${PlayBackSDKManager.baseURL}/entry/$entryId")
+        (url.openConnection() as? HttpURLConnection)?.run {
             try {
-                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    val responseText = connection.inputStream.bufferedReader().use { it.readText() }
-                    val responseModel = Json.decodeFromString<PlaybackResponseModel>(responseText)
+                setRequestProperty("Accept", "application/json")
+                setRequestProperty("x-api-key", apiKey)
+                authorizationToken?.let { setRequestProperty("Authorization", "Bearer $it") }
+
+                val responseText = if (responseCode == HttpURLConnection.HTTP_OK) {
+                    inputStream.bufferedReader().use(BufferedReader::readText)
+                } else {
+                    errorStream.bufferedReader().use(BufferedReader::readText)
+                }
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val json = Json { ignoreUnknownKeys = true }
+                    val responseModel = json.decodeFromString<PlaybackResponseModel>(responseText)
                     emit(responseModel)
                 } else {
-                    // TODO: handle error
-                    val errorResponse = connection.errorStream?.let {
-                        Json.decodeFromString<ErrorResponse>(it.reader().readText())
+                    val json = Json { ignoreUnknownKeys = true }
+                    val errorResponse = json.decodeFromString<PlaybackResponseModel>(responseText)
+
+                    val errorMessage = errorResponse.message ?: when (responseCode) {
+                        HttpURLConnection.HTTP_FORBIDDEN -> "API Key not provided or not valid"
+                        else -> "Failed to get player information"
                     }
-                    val errorMessage = errorResponse?.message ?: "Unknown authentication error"
-                    throw PlayBackAPIError.apiError(connection.responseCode, errorMessage)
+
+                    throw PlayBackAPIError.apiError(
+                        responseCode,
+                        errorMessage,
+                        errorResponse.message ?: "Reason not available in this context."
+                    )
                 }
             } catch (e: IOException) {
                 throw PlayBackAPIError.NetworkError(e)
             } finally {
-                connection.disconnect()
+                disconnect()
             }
-        }
+        } ?: throw PlayBackAPIError.ApiError(
+            0,
+            "Unable to open connection",
+            "No connection established"
+        )
     }
 }

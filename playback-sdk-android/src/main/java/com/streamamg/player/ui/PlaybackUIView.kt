@@ -42,7 +42,7 @@ internal class PlaybackUIView(
         PlayBackSDKManager.loadHLSStream(entryId, authorizationToken) { hlsURL, error ->
             if (error != null) {
                 // Handle error
-                onError?.invoke(PlayBackAPIError.InitializationError)
+                onError?.invoke(error)
             } else {
                 // Update video URL
                 videoURL = hlsURL?.toString()

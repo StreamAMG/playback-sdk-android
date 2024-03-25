@@ -28,13 +28,6 @@ sealed class SDKError : Throwable() {
     }
 
     /**
-     * Error indicating a failure to load HLS stream.
-     */
-    data object LoadHLSStreamError : SDKError() {
-        private fun readResolve(): Any = LoadHLSStreamError
-    }
-
-    /**
      * Error indicating a failure to fetch Bitmovin license.
      */
     data object FetchBitmovinLicenseError : SDKError() {
@@ -49,40 +42,24 @@ sealed class SDKError : Throwable() {
  */
 sealed class PlayBackAPIError : Throwable() {
 
-    //region Public Subclasses
-
-    /**
-     * Error indicating an issue during API initialization.
-     */
     data object InitializationError : PlayBackAPIError() {
         private fun readResolve(): Any = InitializationError
+        override val message: String?
+            get() = "Initialization error occurred"
     }
 
-    /**
-     * Error representing a network-related issue.
-     * @property error The throwable representing the network error.
-     */
-    data class NetworkError(val error: Throwable) : PlayBackAPIError()
+    data class NetworkError(val error: Throwable) : PlayBackAPIError() {
+        override val message: String?
+            get() = "Network error: ${error.message}"
+    }
 
-    /**
-     * Error representing an API-related issue.
-     * @property statusCode The HTTP status code of the error.
-     * @property message The error message.
-     */
-    data class ApiError(val statusCode: Int, override val message: String) : PlayBackAPIError()
+    data class ApiError(val statusCode: Int, override val message: String, val reason: String) : PlayBackAPIError()
 
     companion object {
-        /**
-         * Factory method to create an [ApiError] instance.
-         * @param statusCode The HTTP status code of the error.
-         * @param message The error message.
-         * @return An instance of [ApiError] representing the API error.
-         */
-        fun apiError(statusCode: Int, message: String): PlayBackAPIError {
-            return ApiError(statusCode, message)
+        fun apiError(statusCode: Int, message: String, reason: String): PlayBackAPIError {
+            return ApiError(statusCode, message, reason)
         }
     }
-
-    //endregion
 }
+
 

@@ -1,14 +1,9 @@
 import com.streamamg.PlayBackAPIError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -36,7 +31,16 @@ internal class PlayerInformationAPIService(private val apiKey: String) : PlayerI
                     val playerInfo = json.decodeFromString<PlayerInformationResponseModel>(responseText)
                     emit(playerInfo)
                 } else {
-                    throw PlayBackAPIError.apiError(connection.responseCode, "Failed to get player information")
+                    val responseText = connection.inputStream.bufferedReader().use { it.readText() }
+                    val playerInfo = json.decodeFromString<PlayerInformationResponseModel>(responseText)
+                    emit(playerInfo)
+
+                    val errorMessage = when (connection.responseCode) {
+                        HttpURLConnection.HTTP_FORBIDDEN -> playerInfo.message ?: "API Key not provided or not valid"
+                        else -> playerInfo.message ?: "Failed to get player information"
+                    }
+
+                    throw PlayBackAPIError.apiError(connection.responseCode, errorMessage, playerInfo.message ?: "Reason not available in this context.")
                 }
             } catch (e: IOException) {
                 throw PlayBackAPIError.NetworkError(e)
@@ -49,7 +53,9 @@ internal class PlayerInformationAPIService(private val apiKey: String) : PlayerI
 @Serializable
 internal data class PlayerInformationResponseModel(
     val player: PlayerInfo?,
-    val defaults: Defaults?
+    val defaults: Defaults?,
+    val message: String? = null,
+    val reason: String? = null
 )
 
 @Serializable

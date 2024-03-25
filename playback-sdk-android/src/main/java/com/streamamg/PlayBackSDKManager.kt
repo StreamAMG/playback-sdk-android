@@ -8,6 +8,7 @@ import com.streamamg.api.player.PlayBackAPI
 import com.streamamg.api.player.PlayBackAPIService
 import com.streamamg.player.ui.PlaybackUIView
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import java.net.URL
 
@@ -123,11 +124,6 @@ object PlayBackSDKManager {
                     return@launch
                 }
 
-                Log.d(
-                    "PlayBackSDKManager",
-                    "Bitmovin license fetched successfully: $bitmovinLicense"
-                )
-
                 completion(bitmovinLicense, null)
             } catch (e: Throwable) {
                 Log.e("PlayBackSDKManager", "Error fetching Bitmovin license: $e")
@@ -149,30 +145,35 @@ object PlayBackSDKManager {
     fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
-        completion: (URL?, SDKError?) -> Unit
+        completion: (URL?, PlayBackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            try {
-                val videoDetails =
-                    playBackAPI.getVideoDetails(entryId, authorizationToken).firstOrNull()
-
-                val hlsURLString = videoDetails?.media?.hls
-                val hlsURL = hlsURLString?.let { URL(it) }
-
-                if (hlsURL != null) {
-                    completion(hlsURL, null)
-                } else {
-                    completion(null, SDKError.LoadHLSStreamError)
+            playBackAPI.getVideoDetails(entryId, authorizationToken)
+                .catch { e ->
+                    // Handle the PlayBackAPIError or any other Throwable as a PlayBackAPIError
+                    when (e) {
+                        is PlayBackAPIError -> completion(null, e)
+                        else -> completion(null, PlayBackAPIError.NetworkError(e))
+                    }
                 }
-            } catch (e: Throwable) {
-                Log.e("PlayBackSDKManager", "Error loading HLS stream: $e")
-                completion(null, SDKError.LoadHLSStreamError)
-            }
+                .collect { videoDetails ->
+                    // Successfully retrieved video details, now check for the HLS URL
+                    val hlsURLString = videoDetails.media?.hls
+                    if (!hlsURLString.isNullOrEmpty()) {
+                        val hlsURL = URL(hlsURLString)
+                        completion(hlsURL, null)
+                    } else {
+                        // No HLS URL found in the response
+                        completion(null, PlayBackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
+                    }
+                }
         }
     }
 
-    //endregion
+
+
 
     //endregion
+
 
 }
