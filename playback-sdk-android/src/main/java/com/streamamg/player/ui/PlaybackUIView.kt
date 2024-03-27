@@ -1,9 +1,11 @@
 package com.streamamg.player.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.*
-import com.google.android.material.progressindicator.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.streamamg.PlayBackAPIError
 import com.streamamg.PlayBackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager

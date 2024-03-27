@@ -7,9 +7,12 @@ import androidx.compose.runtime.Composable
 import com.streamamg.api.player.PlayBackAPI
 import com.streamamg.api.player.PlayBackAPIService
 import com.streamamg.player.ui.PlaybackUIView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import java.net.URL
 
 /**
@@ -85,7 +88,7 @@ object PlayBackSDKManager {
     @Composable
     fun loadPlayer(
         entryID: String,
-        authorizationToken: String,
+        authorizationToken: String?,
         onError: ((PlayBackAPIError) -> Unit)?
     ): @Composable () -> Unit {
         val playbackUIView = PlaybackUIView(entryID, authorizationToken, onError)
