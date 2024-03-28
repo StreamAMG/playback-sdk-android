@@ -1,6 +1,19 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URL
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.2.2")
+    }
+}
+
 plugins {
     id("maven-publish")
     id("com.android.library")
@@ -43,6 +56,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            consumerProguardFiles("consumer-rules.pro")
         }
     }
     compileOptions {
@@ -53,6 +67,32 @@ android {
         jvmTarget = "1.8"
     }
 }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+publishing {
+    publications {
+        register("release", MavenPublication::class) {
+            from(components["release"])
+            groupId = "com.streamamg"
+            artifactId = "playback-sdk-android"
+            version = "0.1"
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
 tasks.dokkaGfm {
     outputDirectory.set(layout.projectDirectory.dir("docs/"))
 }
