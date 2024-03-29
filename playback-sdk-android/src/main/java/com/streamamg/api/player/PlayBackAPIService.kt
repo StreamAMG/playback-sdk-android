@@ -48,7 +48,9 @@ internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
             try {
                 setRequestProperty("Accept", "application/json")
                 setRequestProperty("x-api-key", apiKey)
-                authorizationToken?.let { setRequestProperty("Authorization", "Bearer $it") }
+                if (!authorizationToken.isNullOrBlank()) {
+                    setRequestProperty("Authorization", "Bearer $authorizationToken")
+                }
 
                 val responseText = if (responseCode == HttpURLConnection.HTTP_OK) {
                     inputStream.bufferedReader().use(BufferedReader::readText)
