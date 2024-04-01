@@ -1,14 +1,16 @@
 package com.streamamg.player.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.streamamg.PlayBackAPIError
 import com.streamamg.PlayBackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager
@@ -31,9 +33,12 @@ internal fun PlaybackUIView(authorizationToken: String?, entryId: String, onErro
         }
     }
 
-    Box {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         if (!hasFetchedVideoDetails) {
-            // TODO: Add loading indicator
+            CircularProgressIndicator()
         } else {
             videoURL?.let { url ->
                 VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
