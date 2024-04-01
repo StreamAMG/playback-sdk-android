@@ -3,6 +3,7 @@ package com.streamamg.player.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +39,10 @@ internal fun PlaybackUIView(authorizationToken: String?, entryId: String, onErro
         contentAlignment = Alignment.Center
     ) {
         if (!hasFetchedVideoDetails) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
         } else {
             videoURL?.let { url ->
                 VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
