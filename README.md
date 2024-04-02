@@ -43,12 +43,12 @@ Example:
 
 # Loading Player UI
 
-To load the player UI in your application, use the `loadPlayer` method of the `PlayBackSDKManager` singleton object. This method returns a Composable function that you can use to render the player UI.
+To load the player UI in your application, use the `loadPlayer` method of the `PlayBackSDKManager` singleton object. This method is a Composable function that you can use to load and render the player UI.
 
 Example:
 
 ```
-val playerUI = PlayBackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
+PlayBackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
 // Handle player UI error 
 } 
 ```

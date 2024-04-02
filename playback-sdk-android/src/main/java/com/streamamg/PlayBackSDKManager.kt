@@ -79,23 +79,22 @@ object PlayBackSDKManager {
     //region Load Player
 
     /**
-     * Loads the player UI.
+     * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
      * @param onError Callback for handling errors. Default is null.
-     * @return Composable function to render the player UI.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
         onError: ((PlayBackAPIError) -> Unit)?
-    ): @Composable () -> Unit {
-        val playbackUIView = PlaybackUIView(entryID, authorizationToken, onError)
-
-        return {
-            playbackUIView.Render()
-        }
+    ) {
+        PlaybackUIView(
+            authorizationToken = authorizationToken,
+            entryId = entryID,
+            onError = onError
+        )
     }
 
     //endregion

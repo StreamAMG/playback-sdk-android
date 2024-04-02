@@ -1,12 +1,7 @@
 package com.streamamg.player.plugin.bitmovin
 
-import android.view.View
-import android.widget.LinearLayout
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.DisposableEffectScope
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -16,13 +11,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
-import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
-import com.bitmovin.player.api.source.SourceType
-import com.bitmovin.player.api.ui.PlayerViewConfig
-import com.bitmovin.player.ui.CustomMessageHandler
 import com.streamamg.PlayBackSDKManager
-import com.streamamg.playback_sdk_android.R
 import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
@@ -47,8 +37,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
-
-
 
                 val playerConfig = PlayerConfig(key = PlayBackSDKManager.bitmovinLicense)
                 val player = Player(context, playerConfig)
