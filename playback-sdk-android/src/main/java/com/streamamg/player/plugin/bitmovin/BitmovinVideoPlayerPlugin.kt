@@ -67,15 +67,24 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
 
     override fun play() {
-        playerView.player?.play()
+        if (this::playerView
+                .isInitialized) {
+            playerView.player?.play()
+        }
     }
 
     override fun pause() {
-        playerView.player?.pause()
+        if (this::playerView
+                .isInitialized) {
+            playerView.player?.pause()
+        }
     }
 
     override fun removePlayer() {
-        playerView.player = null
+        if (this::playerView
+                .isInitialized) {
+            playerView.player = null
+        }
         ///playerView.player?.release
     }
 }
