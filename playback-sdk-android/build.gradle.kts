@@ -56,7 +56,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-//            consumerProguardFiles("consumer-rules.pro")
+            consumerProguardFiles("consumer-rules.pro")
         }
     }
     compileOptions {
@@ -78,12 +78,12 @@ java {
 
 publishing {
     publications {
-//        register("release", MavenPublication::class) {
+        register("release", MavenPublication::class) {
 //            from(components["release"])
-//            groupId = "com.streamamg"
-//            artifactId = "playback-sdk-android"
-//            version = "0.1"
-//        }
+            groupId = "com.streamamg"
+            artifactId = "playback-sdk-android"
+            version = "0.2"
+        }
     }
     repositories {
         mavenLocal()
