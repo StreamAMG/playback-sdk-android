@@ -82,7 +82,7 @@ publishing {
 //            from(components["release"])
             groupId = "com.streamamg"
             artifactId = "playback-sdk-android"
-            version = "0.2"
+            version = "0.3"
         }
     }
     repositories {
