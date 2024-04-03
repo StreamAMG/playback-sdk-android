@@ -44,11 +44,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Load the player
-                    val player = loadPlayer(entryId, authorizationToken) { error ->
-                        // Handle errors here
-                        Log.e("PlaybackSDK", "Error occurred: $error")
-                    }
 
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -62,7 +57,12 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Log.d("PlaybackSDK", "Player loaded successfully.")
                             Text(text = "test")
-                            player()
+
+                            // Load the player
+                            loadPlayer(entryId, authorizationToken) { error ->
+                                // Handle errors here
+                                Log.e("PlaybackSDK", "Error occurred: $error")
+                            }
                         }
                     }
                 }
