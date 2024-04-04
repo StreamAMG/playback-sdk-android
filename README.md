@@ -1,3 +1,6 @@
+Playback SDK  [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
+=========
+
 ## Getting Started
 
 ### Prerequisites
@@ -7,7 +10,7 @@ Before you begin, ensure you have the following prerequisites installed:
 - Android Studio
 - Kotlin
 
-### Installation (not published now, please add the SDK locally)
+### Installation
 
 To integrate the `PlayBackSDKManager` into your Android application, follow these steps:
 
@@ -15,7 +18,7 @@ To integrate the `PlayBackSDKManager` into your Android application, follow thes
 
     ```groovy
     dependencies {
-        implementation 'com.streamamg:playback-sdk:1.0.0'
+        implementation 'com.streamamg:playback-sdk:x.x.x'
     }
     ```
 
