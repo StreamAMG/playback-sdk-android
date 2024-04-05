@@ -15,11 +15,11 @@ buildscript {
 }
 
 plugins {
-    id("maven-publish")
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka") version "1.9.20" apply true
+    `maven-publish`
 }
 
 subprojects {
@@ -77,16 +77,37 @@ java {
 }
 
 publishing {
+    repositories {
+        maven {
+            url = uri("${layout.buildDirectory}")
+        }
+        mavenLocal()
+    }
+
     publications {
-        register("release", MavenPublication::class) {
-//            from(components["release"])
+        create<MavenPublication>("ReleaseAar") {
             groupId = "com.streamamg"
             artifactId = "playback-sdk-android"
             version = "0.3"
+            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
         }
-    }
-    repositories {
-        mavenLocal()
+        register("mavenJava", MavenPublication::class) {
+            pom {
+                description = "Playback SDK for Android"
+                withXml {
+                    val dependenciesNode = asNode().appendNode("dependencies")
+                    configurations.getByName("implementation") {
+                        dependencies.forEach {
+                            val dependencyNode = dependenciesNode.appendNode("dependency")
+                            dependencyNode.appendNode("groupId", it.group)
+                            dependencyNode.appendNode("artifactId", it.name)
+                            dependencyNode.appendNode("version", it.version)
+                        }
+                    }
+                }
+            }
+            artifact("${layout.buildDirectory}/outputs/aar/${artifactId}}-release.aar")
+        }
     }
 }
 
