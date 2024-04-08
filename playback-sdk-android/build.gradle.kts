@@ -15,6 +15,7 @@ buildscript {
 }
 
 plugins {
+    id("maven-publish")
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
@@ -80,10 +81,10 @@ java {
 
 publishing {
     publications {
-        withType<MavenPublication> {
-                groupId = "com.streamamg"
-                artifactId = "playback-sdk-android"
-                version = "0.3.0"
+        register("release", MavenPublication::class) {//            groupId = "com.streamamg"
+            groupId = "com.streamamg"
+            artifactId = "playback-sdk-android"
+            version = "0.3.0"
         }
 
 //        create<MavenPublication>("ReleaseAar") {
