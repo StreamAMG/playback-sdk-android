@@ -44,9 +44,11 @@ android {
 
     defaultConfig {
         minSdk = 24
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        aarMetadata {
+            minCompileSdk = 24
+        }
     }
 
     buildTypes {
@@ -77,37 +79,39 @@ java {
 }
 
 publishing {
-    repositories {
-        maven {
-            url = uri("${layout.buildDirectory}")
-        }
-        mavenLocal()
-    }
-
     publications {
-        create<MavenPublication>("ReleaseAar") {
-            groupId = "com.streamamg"
-            artifactId = "playback-sdk-android"
-            version = "0.3"
-            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
+        withType<MavenPublication> {
+                groupId = "com.streamamg"
+                artifactId = "playback-sdk-android"
+                version = "0.3.0"
         }
-        register("mavenJava", MavenPublication::class) {
-            pom {
-                description = "Playback SDK for Android"
-                withXml {
-                    val dependenciesNode = asNode().appendNode("dependencies")
-                    configurations.getByName("implementation") {
-                        dependencies.forEach {
-                            val dependencyNode = dependenciesNode.appendNode("dependency")
-                            dependencyNode.appendNode("groupId", it.group)
-                            dependencyNode.appendNode("artifactId", it.name)
-                            dependencyNode.appendNode("version", it.version)
-                        }
-                    }
-                }
-            }
-            artifact("${layout.buildDirectory}/outputs/aar/${artifactId}}-release.aar")
-        }
+
+//        create<MavenPublication>("ReleaseAar") {
+//            groupId = "com.streamamg"
+//            artifactId = "playback-sdk-android"
+//            version = "0.3"
+//            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
+//        }
+//        register("mavenJava", MavenPublication::class) {
+//            pom {
+//                description = "Playback SDK for Android"
+//                withXml {
+//                    val dependenciesNode = asNode().appendNode("dependencies")
+//                    configurations.getByName("implementation") {
+//                        dependencies.forEach {
+//                            val dependencyNode = dependenciesNode.appendNode("dependency")
+//                            dependencyNode.appendNode("groupId", it.group)
+//                            dependencyNode.appendNode("artifactId", it.name)
+//                            dependencyNode.appendNode("version", it.version)
+//                        }
+//                    }
+//                }
+//            }
+//            artifact("${layout.buildDirectory}/outputs/aar/${artifactId}}-release.aar")
+//        }
+    }
+    repositories {
+        mavenLocal()
     }
 }
 
