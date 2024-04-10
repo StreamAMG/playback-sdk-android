@@ -3,10 +3,10 @@ package com.streamamg
 /**
  * Sealed class representing errors related to the SDK operations.
  * Usage:
- * - SDKError and PlayBackAPIError are sealed classes that represent different types of errors that can occur during SDK and API operations respectively.
+ * - SDKError and PlaybackAPIError are sealed classes that represent different types of errors that can occur during SDK and API operations respectively.
  * - SDKError has specific subclasses representing various initialization and licensing errors.
- * - PlayBackAPIError has specific subclasses representing initialization errors, network errors, and API errors.
- * - PlayBackAPIError provides a companion object with a factory method `apiError()` to create instances of `ApiError`.
+ * - PlaybackAPIError has specific subclasses representing initialization errors, network errors, and API errors.
+ * - PlaybackAPIError provides a companion object with a factory method `apiError()` to create instances of `ApiError`.
  *
  */
 sealed class SDKError : Throwable() {
@@ -38,25 +38,25 @@ sealed class SDKError : Throwable() {
 }
 
 /**
- * Sealed class representing errors related to the PlayBackAPI operations.
+ * Sealed class representing errors related to the PlaybackAPI operations.
  */
-sealed class PlayBackAPIError : Throwable() {
+sealed class PlaybackAPIError : Throwable() {
 
-    data object InitializationError : PlayBackAPIError() {
+    data object InitializationError : PlaybackAPIError() {
         private fun readResolve(): Any = InitializationError
         override val message: String?
             get() = "Initialization error occurred"
     }
 
-    data class NetworkError(val error: Throwable) : PlayBackAPIError() {
+    data class NetworkError(val error: Throwable) : PlaybackAPIError() {
         override val message: String?
             get() = "Network error: ${error.message}"
     }
 
-    data class ApiError(val statusCode: Int, override val message: String, val reason: String) : PlayBackAPIError()
+    data class ApiError(val statusCode: Int, override val message: String, val reason: String) : PlaybackAPIError()
 
     companion object {
-        fun apiError(statusCode: Int, message: String, reason: String): PlayBackAPIError {
+        fun apiError(statusCode: Int, message: String, reason: String): PlaybackAPIError {
             return ApiError(statusCode, message, reason)
         }
     }

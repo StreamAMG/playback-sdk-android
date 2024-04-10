@@ -4,8 +4,8 @@ import PlayerInformationAPI
 import PlayerInformationAPIService
 import android.util.Log
 import androidx.compose.runtime.Composable
-import com.streamamg.api.player.PlayBackAPI
-import com.streamamg.api.player.PlayBackAPIService
+import com.streamamg.api.player.PlaybackAPI
+import com.streamamg.api.player.PlaybackAPIService
 import com.streamamg.player.ui.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,18 +18,18 @@ import java.net.URL
 /**
  * Singleton object to manage playback SDK functionalities.
  */
-object PlayBackSDKManager {
+object PlaybackSDKManager {
 
     //region Properties
 
     //region Private Properties
 
-    private lateinit var playBackAPI: PlayBackAPI
+    private lateinit var playBackAPI: PlaybackAPI
     private lateinit var playerInformationAPI: PlayerInformationAPI
 
     private lateinit var amgAPIKey: String
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private lateinit var playBackAPIService: PlayBackAPIService
+    private lateinit var playBackAPIService: PlaybackAPIService
 
     //endregion
 
@@ -67,7 +67,7 @@ object PlayBackSDKManager {
         baseURL?.let { this.baseURL = it }
         amgAPIKey = apiKey
         playerInformationAPI = PlayerInformationAPIService(apiKey)
-        playBackAPIService = PlayBackAPIService(apiKey)
+        playBackAPIService = PlaybackAPIService(apiKey)
         this.playBackAPI = playBackAPIService
 
         // Fetching player information
@@ -88,7 +88,7 @@ object PlayBackSDKManager {
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
-        onError: ((PlayBackAPIError) -> Unit)?
+        onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
@@ -121,14 +121,14 @@ object PlayBackSDKManager {
 
                 val bitmovinLicense = playerInfo?.player?.bitmovin?.license
 
-                this@PlayBackSDKManager.bitmovinLicense = bitmovinLicense ?: run {
+                this@PlaybackSDKManager.bitmovinLicense = bitmovinLicense ?: run {
                     completion(null, SDKError.MissingLicense)
                     return@launch
                 }
 
                 completion(bitmovinLicense, null)
             } catch (e: Throwable) {
-                Log.e("PlayBackSDKManager", "Error fetching Bitmovin license: $e")
+                Log.e("PlaybackSDKManager", "Error fetching Bitmovin license: $e")
                 completion(null, SDKError.FetchBitmovinLicenseError)
             }
         }
@@ -147,15 +147,15 @@ object PlayBackSDKManager {
     fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
-        completion: (URL?, PlayBackAPIError?) -> Unit
+        completion: (URL?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             playBackAPI.getVideoDetails(entryId, authorizationToken)
                 .catch { e ->
-                    // Handle the PlayBackAPIError or any other Throwable as a PlayBackAPIError
+                    // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
-                        is PlayBackAPIError -> completion(null, e)
-                        else -> completion(null, PlayBackAPIError.NetworkError(e))
+                        is PlaybackAPIError -> completion(null, e)
+                        else -> completion(null, PlaybackAPIError.NetworkError(e))
                     }
                 }
                 .collect { videoDetails ->
@@ -166,7 +166,7 @@ object PlayBackSDKManager {
                         completion(hlsURL, null)
                     } else {
                         // No HLS URL found in the response
-                        completion(null, PlayBackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
+                        completion(null, PlaybackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
                     }
                 }
         }

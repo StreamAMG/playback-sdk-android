@@ -1,14 +1,14 @@
 package com.streamamg.api.player
 
-import com.streamamg.PlayBackAPIError
-import com.streamamg.PlayBackSDKManager
+import com.streamamg.PlaybackAPIError
+import com.streamamg.PlaybackSDKManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.Json
+import java.io.BufferedReader
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlinx.serialization.json.Json
-import java.io.BufferedReader
 
 /**
  * Represents the error response received from the playback API.
@@ -19,7 +19,7 @@ data class ErrorResponse(val message: String)
 /**
  * A service class responsible for handling playback API requests.
  */
-internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
+internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
 
     // Class-level property to store the apiKey
     private lateinit var storedApiKey: String
@@ -43,7 +43,7 @@ internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
         entryId: String,
         authorizationToken: String?
     ): Flow<PlaybackResponseModel> = flow {
-        val url = URL("${PlayBackSDKManager.baseURL}/entry/$entryId")
+        val url = URL("${PlaybackSDKManager.baseURL}/entry/$entryId")
         (url.openConnection() as? HttpURLConnection)?.run {
             try {
                 setRequestProperty("Accept", "application/json")
@@ -71,18 +71,18 @@ internal class PlayBackAPIService(private val apiKey: String) : PlayBackAPI {
                         else -> "Failed to get player information"
                     }
 
-                    throw PlayBackAPIError.apiError(
+                    throw PlaybackAPIError.apiError(
                         responseCode,
                         errorMessage,
                         errorResponse.message ?: "Reason not available in this context."
                     )
                 }
             } catch (e: IOException) {
-                throw PlayBackAPIError.NetworkError(e)
+                throw PlaybackAPIError.NetworkError(e)
             } finally {
                 disconnect()
             }
-        } ?: throw PlayBackAPIError.ApiError(
+        } ?: throw PlaybackAPIError.ApiError(
             0,
             "Unable to open connection",
             "No connection established"
