@@ -151,7 +151,7 @@ tasks.withType<DokkaTask>().configureEach {
         externalDocumentationLink {
             url.set(URL("https://www.streamamg.com/"))
             packageListUrl.set(
-                rootProject.projectDir.resolve("serialization.package.list").toURL()
+                rootProject.projectDir.resolve("serialization.package.list").toURI().toURL()
             )
         }
     }
@@ -184,11 +184,6 @@ afterEvaluate {
             }
         }
         publications {
-            create<MavenPublication>("debug") {
-                from(components["debug"])
-                artifactId = "playback-sdk-android-debug"
-                artifact("playback-sdk-android")
-            }
             create<MavenPublication>("release") {
                 from(components["release"])
                 artifactId = "playback-sdk-android"
