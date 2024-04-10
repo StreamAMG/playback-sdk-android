@@ -14,15 +14,82 @@ Before you begin, ensure you have the following prerequisites installed:
 
 To integrate the `PlayBackSDKManager` into your Android application, follow these steps:
 
-1. Add the following dependency to your `build.gradle` file:
+1. Add a link to Jitpack and Bitmovin release repository to your application's `settings.gradle.kts` file:
 
     ```groovy
-    dependencies {
-        implementation 'com.streamamg:playback-sdk:x.x.x'
+    dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+        repositories {
+            google()
+            mavenCentral()
+            maven {
+                url = uri("https://artifacts.bitmovin.com/artifactory/public-releases")
+            }
+            maven {
+                url = uri("https://jitpack.io")
+            }
+        }
     }
     ```
 
-2. Sync your project to ensure the new dependency is downloaded and added to your project.
+2. Add the following dependency to your app `build.gradle.kts` file:
+
+    ```groovy
+    dependencies {
+        ...
+        implementation 'com.github.StreamAMG:playback-sdk-android:x.x.x'
+        implementation 'com.bitmovin.player:player:x.x.x'
+    }
+    ```
+
+3. Add the following plugins on your project `build.gradle.kts` file:
+
+    ```groovy
+    plugins {
+        ...
+        id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
+        id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
+    }
+    ```
+
+4. Sync your project to ensure the new dependency is downloaded and added to your project.
+
+### Installation from local path
+
+If you want to debug and integrate Playback SDK from your local path, follow these steps:
+
+1. Add the path of the local SDK to your application's `settings.gradle.kts` file:
+
+    ```groovy
+    include(":app")
+    include (":playback-sdk-android")
+    project(":playback-sdk-android").projectDir = File("../playback-sdk-android/playback-sdk-android")
+    ```
+
+    Change the File path based on your local SDK path
+
+2. Add the following dependency to your app `build.gradle.kts` file:
+
+    ```groovy
+    dependencies {
+        ...
+        implementation(project(":playback-sdk-android"))
+        implementation 'com.bitmovin.player:player:x.x.x'
+    }
+    ```
+
+3. Add the following plugins on your project `build.gradle.kts` file:
+
+    ```groovy
+    plugins {
+        ...
+        id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
+        id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
+    }
+    ```
+
+4. Sync your project to ensure the new dependency is downloaded and added to your project.
+    
 
 # PlayBackSDKManager
 
