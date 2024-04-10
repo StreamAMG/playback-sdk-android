@@ -180,7 +180,7 @@ afterEvaluate {
     publishing {
         repositories {
             maven {
-                url = uri("$buildDir/repository")
+                url = uri("$project.layout.buildDirectory/repository")
             }
         }
         publications {
