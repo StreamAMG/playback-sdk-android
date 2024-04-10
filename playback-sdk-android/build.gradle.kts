@@ -94,44 +94,6 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-//publishing {
-//    publications {
-//        register("release", MavenPublication::class) {//            groupId = "com.streamamg"
-//            groupId = "com.streamamg"
-//            artifactId = "playback-sdk-android"
-//            version = "0.3.0"
-//        }
-
-//        create<MavenPublication>("ReleaseAar") {
-//            groupId = "com.streamamg"
-//            artifactId = "playback-sdk-android"
-//            version = "0.3"
-//            afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
-//        }
-//        register("mavenJava", MavenPublication::class) {
-//            pom {
-//                description = "Playback SDK for Android"
-//                withXml {
-//                    val dependenciesNode = asNode().appendNode("dependencies")
-//                    configurations.getByName("implementation") {
-//                        dependencies.forEach {
-//                            val dependencyNode = dependenciesNode.appendNode("dependency")
-//                            dependencyNode.appendNode("groupId", it.group)
-//                            dependencyNode.appendNode("artifactId", it.name)
-//                            dependencyNode.appendNode("version", it.version)
-//                        }
-//                    }
-//                }
-//            }
-//            artifact("${layout.buildDirectory}/outputs/aar/${artifactId}}-release.aar")
-//        }
-
-//    }
-//    repositories {
-//        mavenLocal()
-//    }
-//}
-
 tasks.dokkaGfm {
     outputDirectory.set(layout.projectDirectory.dir("docs/"))
 }
