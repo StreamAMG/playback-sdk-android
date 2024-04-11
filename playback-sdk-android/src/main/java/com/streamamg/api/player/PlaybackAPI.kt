@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Interface defining the methods required to interact with the Playback API.
  */
-internal interface PlayBackAPI {
+internal interface PlaybackAPI {
 
     /**
      * Retrieves video details for a given entry ID.
