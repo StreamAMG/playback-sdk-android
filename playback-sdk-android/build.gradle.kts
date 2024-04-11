@@ -1,6 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.kotlin.config.KotlinCompilerVersion
 import java.net.URI
+
 
 buildscript {
     repositories {
@@ -44,7 +44,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs = listOf("-Xinline-classes")
     }
 
     defaultConfig {
@@ -119,8 +118,27 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                url = uri("$project.layout.buildDirectory/repository")
+            }
+        }
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                artifactId = "playback-sdk-android"
+            }
+        }
+    }
+}
+
+tasks.create<org.gradle.jvm.tasks.Jar>("releaseSourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencies {
-    implementation(kotlin("stdlib-jdk7", KotlinCompilerVersion.VERSION))
     implementation("androidx.compose.runtime:runtime:1.6.2")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -136,20 +154,4 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.bitmovin.player:player:3.61.0")
-}
-
-afterEvaluate {
-    publishing {
-        repositories {
-            maven {
-                url = uri("$project.layout.buildDirectory/repository")
-            }
-        }
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
-                artifactId = "playback-sdk-android"
-            }
-        }
-    }
 }

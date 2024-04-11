@@ -1,9 +1,11 @@
 package com.streamamg.playback_sdk_android_app
 
 import androidx.compose.runtime.Composable
-import com.streamamg.*
+import com.streamamg.PlaybackSDKManager
+import com.streamamg.SDKError
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import java.net.URL
