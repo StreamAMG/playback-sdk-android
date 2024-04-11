@@ -42,7 +42,7 @@ To integrate the `PlaybackSDKManager` into your Android application, follow thes
     }
     ```
 
-    - This is the lates version of the Playback SDK [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
+    - This is the latest version of the Playback SDK [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
     - You can check the latest Bitmovin player version [HERE](https://developer.bitmovin.com/playback/docs/release-notes-android)
 
 3. Add the following plugins on your project `build.gradle.kts` file:
