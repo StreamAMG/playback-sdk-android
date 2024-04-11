@@ -1,6 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.config.KotlinCompilerVersion
-import java.net.URL
+import java.net.URI
 
 buildscript {
     repositories {
@@ -76,7 +76,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                val outputFileName = "${project.name}-${variant.name}-${defaultConfig.versionName}.aar"
+                val outputFileName = "${project.name}-${variant.name}-${version}.aar"
                 println("OutputFileName: $outputFileName")
                 output.outputFileName = outputFileName
             }
@@ -111,7 +111,7 @@ tasks.withType<DokkaTask>().configureEach {
     offlineMode.set(false)
     dokkaSourceSets.configureEach {
         externalDocumentationLink {
-            url.set(URL("https://www.streamamg.com/"))
+            url.set(URI("https://www.streamamg.com/").toURL())
             packageListUrl.set(
                 rootProject.projectDir.resolve("serialization.package.list").toURI().toURL()
             )

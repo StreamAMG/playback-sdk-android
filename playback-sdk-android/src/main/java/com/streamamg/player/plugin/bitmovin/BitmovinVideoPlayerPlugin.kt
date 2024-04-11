@@ -99,7 +99,8 @@ private class PlayerViewLifecycleHandler {
         playerView.player?.pause() // Pause playback when the composable stops
     }
 
-    fun onDestroy(playerView: PlayerView) {
+    @SuppressWarnings
+    fun onDestroy(@Suppress("UNUSED_PARAMETER") playerView: PlayerView) {
         // Do nothing here as the player lifecycle is managed outside the composable
     }
 }

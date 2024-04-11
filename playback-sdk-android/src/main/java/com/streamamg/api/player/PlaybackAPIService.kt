@@ -22,12 +22,11 @@ data class ErrorResponse(val message: String)
 internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
 
     // Class-level property to store the apiKey
-    private lateinit var storedApiKey: String
+    private var storedApiKey: String = apiKey
 
     // Initialization block
     init {
         // Store the apiKey in the class-level property
-        storedApiKey = apiKey
 
         // Additional initialization logic can go here if needed
     }
