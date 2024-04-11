@@ -1,22 +1,24 @@
 package com.streamamg.playback_sdk_android_app
 
 import androidx.compose.runtime.Composable
-import com.streamamg.*
+import com.streamamg.PlaybackSDKManager
+import com.streamamg.SDKError
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import java.net.URL
 
-class PlayBackSDKManagerTests {
+class PlaybackSDKManagerTests {
 
-    private lateinit var manager: PlayBackSDKManager
+    private lateinit var manager: PlaybackSDKManager
     private val apiKey = "f3Beljhmlz2ea7M9TfErE6mKPsAcY3BrasMMEG24"
     private val entryID = "0_k3mz0mf8"
 
     @Before
     fun setUp() {
-        manager = PlayBackSDKManager
+        manager = PlaybackSDKManager
     }
 
     @Test

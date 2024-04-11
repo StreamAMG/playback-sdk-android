@@ -12,7 +12,7 @@ import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.source.SourceConfig
-import com.streamamg.PlayBackSDKManager
+import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
@@ -38,7 +38,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
 
-                val playerConfig = PlayerConfig(key = PlayBackSDKManager.bitmovinLicense)
+                val playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
                 val player = Player(context, playerConfig)
                 playerView = PlayerView(context, player) // Use context provided here
                 playerView.player?.load(SourceConfig.fromUrl(hlsUrl))
@@ -108,7 +108,8 @@ private class PlayerViewLifecycleHandler {
         playerView.player?.pause() // Pause playback when the composable stops
     }
 
-    fun onDestroy(playerView: PlayerView) {
+    @SuppressWarnings
+    fun onDestroy(@Suppress("UNUSED_PARAMETER") playerView: PlayerView) {
         // Do nothing here as the player lifecycle is managed outside the composable
     }
 }

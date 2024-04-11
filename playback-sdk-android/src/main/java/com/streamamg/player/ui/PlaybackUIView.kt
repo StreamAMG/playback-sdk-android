@@ -12,17 +12,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.streamamg.PlayBackAPIError
-import com.streamamg.PlayBackSDKManager
+import com.streamamg.PlaybackAPIError
+import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager
 
 @Composable
-internal fun PlaybackUIView(authorizationToken: String?, entryId: String, onError: ((PlayBackAPIError) -> Unit)?) {
+internal fun PlaybackUIView(authorizationToken: String?, entryId: String, onError: ((PlaybackAPIError) -> Unit)?) {
     var hasFetchedVideoDetails by remember { mutableStateOf(false) }
     var videoURL: String? by remember { mutableStateOf(null) }
 
     LaunchedEffect(entryId) {
-        PlayBackSDKManager.loadHLSStream(entryId, authorizationToken) { hlsURL, error ->
+        PlaybackSDKManager.loadHLSStream(entryId, authorizationToken) { hlsURL, error ->
             if (error != null) {
                 // Handle error
                 onError?.invoke(error)

@@ -1,4 +1,4 @@
-import com.streamamg.PlayBackAPIError
+import com.streamamg.PlaybackAPIError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.Dispatchers
@@ -40,10 +40,10 @@ internal class PlayerInformationAPIService(private val apiKey: String) : PlayerI
                         else -> playerInfo.message ?: "Failed to get player information"
                     }
 
-                    throw PlayBackAPIError.apiError(connection.responseCode, errorMessage, playerInfo.message ?: "Reason not available in this context.")
+                    throw PlaybackAPIError.apiError(connection.responseCode, errorMessage, playerInfo.message ?: "Reason not available in this context.")
                 }
             } catch (e: IOException) {
-                throw PlayBackAPIError.NetworkError(e)
+                throw PlaybackAPIError.NetworkError(e)
             }
         }.flowOn(Dispatchers.IO)
     }

@@ -1,5 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
-import java.net.URL
+import java.net.URI
+
 
 buildscript {
     repositories {
@@ -15,12 +16,15 @@ buildscript {
 }
 
 plugins {
-    id("maven-publish")
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka") version "1.9.20" apply true
+    `maven-publish`
 }
+
+group = "com.streamamg"
+version = "0.3.0"
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
@@ -47,10 +51,13 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        aarMetadata {
+            minCompileSdk = 24
+        }
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -63,31 +70,27 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    libraryVariants.all {
+        val variant = this
+        variant.outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                val outputFileName = "${project.name}-${variant.name}-${version}.aar"
+                println("OutputFileName: $outputFileName")
+                output.outputFileName = outputFileName
+            }
+    }
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(11)
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-publishing {
-    publications {
-        register("release", MavenPublication::class) {
-//            from(components["release"])
-            groupId = "com.streamamg"
-            artifactId = "playback-sdk-android"
-            version = "0.3"
-        }
-    }
-    repositories {
-        mavenLocal()
-    }
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.dokkaGfm {
@@ -107,12 +110,32 @@ tasks.withType<DokkaTask>().configureEach {
     offlineMode.set(false)
     dokkaSourceSets.configureEach {
         externalDocumentationLink {
-            url.set(URL("https://www.streamamg.com/"))
+            url.set(URI("https://www.streamamg.com/").toURL())
             packageListUrl.set(
-                rootProject.projectDir.resolve("serialization.package.list").toURL()
+                rootProject.projectDir.resolve("serialization.package.list").toURI().toURL()
             )
         }
     }
+}
+
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                url = uri("$project.layout.buildDirectory/repository")
+            }
+        }
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                artifactId = "playback-sdk-android"
+            }
+        }
+    }
+}
+
+tasks.create<org.gradle.jvm.tasks.Jar>("releaseSourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 dependencies {
