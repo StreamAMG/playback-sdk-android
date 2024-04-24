@@ -2,11 +2,13 @@ package com.streamamg
 
 import PlayerInformationAPI
 import PlayerInformationAPIService
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import com.bitmovin.player.casting.BitmovinCastManager
 import com.streamamg.api.player.PlaybackAPI
 import com.streamamg.api.player.PlaybackAPIService
-import com.streamamg.player.ui.PlaybackUIView
+import com.streamamg.player.ui.PlaybackUIView.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,7 +41,7 @@ object PlaybackSDKManager {
      * Base URL for the playback API.
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
-    internal lateinit var bitmovinLicense: String
+    internal var bitmovinLicense: String = ""
     //endregion
 
     //endregion
@@ -63,6 +65,8 @@ object PlaybackSDKManager {
             completion(null, SDKError.InitializationError)
             return
         }
+
+        BitmovinCastManager.initialize()
 
         baseURL?.let { this.baseURL = it }
         amgAPIKey = apiKey
@@ -177,5 +181,16 @@ object PlaybackSDKManager {
 
     //endregion
 
+    //region Chromecast
 
+    /**
+     * Each Activity that uses Cast related API's has to call the following function before using any cast related API.
+     * Update Chromecast context.
+     * @param context The context of the Activity.
+     */
+    fun updateCastContext(context: Context) {
+        BitmovinCastManager.getInstance().updateContext(context)
+    }
+
+    //endregion
 }
