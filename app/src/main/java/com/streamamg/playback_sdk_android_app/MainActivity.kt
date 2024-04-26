@@ -58,10 +58,8 @@ class MainActivity : ComponentActivity() {
                             Log.d("PlaybackSDK", "Player loaded successfully.")
                             Text(text = "test")
 
-                            val userAgent = System.getProperty("http.agent")
-
                             // Load the player
-                            loadPlayer(entryId, authorizationToken, userAgent) { error ->
+                            loadPlayer(entryId, authorizationToken) { error ->
                                 // Handle errors here
                                 Log.e("PlaybackSDK", "Error occurred: $error")
                             }

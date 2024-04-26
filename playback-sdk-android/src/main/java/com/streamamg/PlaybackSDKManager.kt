@@ -82,13 +82,14 @@ object PlaybackSDKManager {
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
+     * @param userAgent Custom user-agent header for the loading request. Default is Android system http user agent.
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
-        userAgent: String?,
+        userAgent: String? = System.getProperty("http.agent"),
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
