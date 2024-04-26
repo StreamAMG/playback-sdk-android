@@ -275,7 +275,7 @@
                         "inlineContent": [
                           {
                             "type": "text",
-                            "text": "onDisappear"
+                            "text": "onDestroy"
                           }
                         ]
                       },
