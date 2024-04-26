@@ -417,7 +417,7 @@
             "    } else {",
             "        // Need to start the SSO before using the playback API",
             "        LaunchedEffect(Unit) {",
-            "            val response = makeAPICall(\"${settingsManager.baseURL}/sso/start?token=$authorizationToken\")",
+            "            val response = makeAPICall(\"${BASE_URL}/sso/start?token=$authorizationToken\")",
             "            when (response) {",
             "                is ApiResponse.Success -> {",
             "                    playerLoaded = true",
