@@ -88,11 +88,13 @@ object PlaybackSDKManager {
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
+        userAgent: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
+            userAgent = userAgent,
             onError = onError
         )
     }
@@ -147,10 +149,11 @@ object PlaybackSDKManager {
     fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
+        userAgent: String?,
         completion: (URL?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playBackAPI.getVideoDetails(entryId, authorizationToken)
+            playBackAPI.getVideoDetails(entryId, authorizationToken, userAgent)
                 .catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
