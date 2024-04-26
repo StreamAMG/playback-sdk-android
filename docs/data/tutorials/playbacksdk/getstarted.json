@@ -3,7 +3,7 @@
       {
         "chapter": "Getting Started",
         "estimatedTimeInMinutes": 60,
-        "title": "Edit: Playback SDK Overview",
+        "title": "Playback SDK Overview",
         "content": [
           {
             "inlineContent": [
@@ -357,7 +357,7 @@
       {
         "traits": [
           {
-            "interfaceLanguage": "java"
+            "interfaceLanguage": "kotlin"
           }
         ],
         "paths": [
@@ -366,7 +366,7 @@
       }
     ],
     "identifier": {
-      "interfaceLanguage": "java",
+      "interfaceLanguage": "kotlin",
       "url": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted"
     },
     "references": {
@@ -475,7 +475,7 @@
             "    }",
             "}"
         ],
-        "syntax": "java",
+        "syntax": "swift",
         "fileType": "kotlin",
         "highlights": [],
         "fileName": "PlayerTestView.kt",
@@ -499,7 +499,7 @@
         "highlights": [],
         "fileType": "kotlin",
         "type": "file",
-        "syntax": "java",
+        "syntax": "swift",
         "fileName": "PlayBackDemoApp.kt",
         "content": [
             "// Others imports",
