@@ -86,17 +86,20 @@ object PlaybackSDKManager {
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
+     * @param userAgent Custom user-agent header for the loading request. Default is Android system http user agent.
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
+        userAgent: String? = System.getProperty("http.agent"),
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
+            userAgent = userAgent,
             onError = onError
         )
     }
@@ -151,10 +154,11 @@ object PlaybackSDKManager {
     fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
+        userAgent: String?,
         completion: (URL?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playBackAPI.getVideoDetails(entryId, authorizationToken)
+            playBackAPI.getVideoDetails(entryId, authorizationToken, userAgent)
                 .catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {

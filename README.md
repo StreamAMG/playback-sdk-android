@@ -1,3 +1,4 @@
+
 Playback SDK  [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
 =========
 
@@ -122,12 +123,27 @@ To load the player UI in your application, use the `loadPlayer` method of the `P
 
 Example:
 
-```
+```kotlin
 PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
-// Handle player UI error 
+    // Handle player UI error 
 } 
 ```
 
+# Playing Access-Controlled Content
+To play premium or freemium on-demand and live videos, an `authorizationToken` has to be passed into the player. 
+Before loading the player, a call to CloudPay to start session must be made with the same token.
+```kotlin
+"$baseURL/sso/start?token=$authorizationToken"
+```
+In case a custom `user-agent` header for the request is set when creating a token, it should be passed to the player as well.  
+
+Example:
+
+```kotlin
+PlaybackSDKManager.loadPlayer(entryID, authorizationToken, customUserAgent) { error -> 
+    // Handle player UI error 
+} 
+```
 # Error Handling
 
 The `PlaybackSDKManager` provides error handling through sealed classes `SDKError` and `PlaybackAPIError`. These classes represent various errors that can occur during SDK and API operations respectively.
