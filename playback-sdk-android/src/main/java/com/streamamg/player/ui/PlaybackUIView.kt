@@ -17,12 +17,12 @@ import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager
 
 @Composable
-internal fun PlaybackUIView(authorizationToken: String?, entryId: String, onError: ((PlaybackAPIError) -> Unit)?) {
+internal fun PlaybackUIView(authorizationToken: String?, entryId: String, userAgent: String?, onError: ((PlaybackAPIError) -> Unit)?) {
     var hasFetchedVideoDetails by remember { mutableStateOf(false) }
     var videoURL: String? by remember { mutableStateOf(null) }
 
     LaunchedEffect(entryId) {
-        PlaybackSDKManager.loadHLSStream(entryId, authorizationToken) { hlsURL, error ->
+        PlaybackSDKManager.loadHLSStream(entryId, authorizationToken, userAgent) { hlsURL, error ->
             if (error != null) {
                 // Handle error
                 onError?.invoke(error)

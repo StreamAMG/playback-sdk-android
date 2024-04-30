@@ -41,7 +41,7 @@ class PlaybackSDKManagerTests {
     fun testLoadHLSStream() {
         val completion: (URL?, SDKError?) -> Unit = { _, _ -> }
         runBlocking {
-            manager.loadHLSStream(entryID, null) { hlsURL, error ->
+            manager.loadHLSStream(entryID, null, null) { hlsURL, error ->
                 assertNotNull(hlsURL)
                 assertNull(error)
             }
@@ -61,7 +61,7 @@ class PlaybackSDKManagerTests {
     @Composable
     @Test
     fun testLoadPlayer() {
-        val player = manager.loadPlayer(entryID, "authToken", null)
+        val player = manager.loadPlayer(entryID, "authToken", "userAgent") {}
         assertNotNull(player)
     }
 }
