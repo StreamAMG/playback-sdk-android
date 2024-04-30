@@ -17,11 +17,11 @@
     </style>
 
     <style name="TextAppearance.CustomCastIntroOverlay.Button" parent="android:style/TextAppearance">
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="TextAppearance.CustomCastIntroOverlay.Title" parent="android:style/TextAppearance.Large">
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="Theme.CastVideosTheme" parent="Theme.AppCompat.NoActionBar">
