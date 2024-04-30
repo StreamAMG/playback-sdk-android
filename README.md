@@ -158,3 +158,15 @@ Handle errors based on these classes to provide appropriate feedback to users.
 Additionally, the package includes a singleton object `VideoPlayerPluginManager` for managing video player plugins. This object allows you to register, remove, and retrieve the currently selected video player plugin.
 
 For further details on how to use the `VideoPlayerPluginManager`, refer to the inline documentation provided in the code.
+
+# Chromecasting
+
+To use the Google Chromecast support, use the `updateCastContext` method of the `PlaybackSDKManager` singleton object, passing the context of the Activity otherwise the Casting will be disabled. Each Activity that uses Cast related API's has to call the following function before using any cast related API, e.g. in the `Activity.onCreate` function:
+
+```kotlin
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        PlaybackSDKManager.updateCastContext(this)
+        ...
+    }
+```

@@ -154,4 +154,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.bitmovin.player:player:3.61.0")
+    implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
 }
