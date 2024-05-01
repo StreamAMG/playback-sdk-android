@@ -43,7 +43,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -55,14 +55,12 @@ android {
             minCompileSdk = 24
         }
     }
-
     buildFeatures {
         buildConfig = true
     }
-
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
+        release {
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -71,13 +69,13 @@ android {
             buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}\"")
         }
         debug {
-            isJniDebuggable = true
+            isMinifyEnabled = false
             buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}-debug\"")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     libraryVariants.all {
         val variant = this
