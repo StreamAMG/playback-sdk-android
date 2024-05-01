@@ -1,6 +1,6 @@
+
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URI
-
 
 buildscript {
     repositories {
@@ -56,6 +56,10 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -64,6 +68,11 @@ android {
                 "proguard-rules.pro"
             )
             consumerProguardFiles("consumer-rules.pro")
+            buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}\"")
+        }
+        debug {
+            isJniDebuggable = true
+            buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}-debug\"")
         }
     }
     compileOptions {
