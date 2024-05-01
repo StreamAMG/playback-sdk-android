@@ -44,7 +44,8 @@ object PlaybackSDKManager {
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
 
-    val playbackSdkVersion = BuildConfig.PLAYBACK_SDK_VERSION
+    val playbackSdkVersion = BuildConfig.SDK_VERSION
+
     //endregion
 
     //endregion

@@ -20,6 +20,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka") version "1.9.20" apply true
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
     `maven-publish`
 }
 
@@ -43,7 +44,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -55,9 +56,11 @@ android {
             minCompileSdk = 24
         }
     }
-    buildFeatures {
-        buildConfig = true
+
+    buildConfig {
+        buildConfigField("SDK_VERSION", provider { "\"${project.version}\"" })
     }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -66,16 +69,14 @@ android {
                 "proguard-rules.pro"
             )
             consumerProguardFiles("consumer-rules.pro")
-            buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}\"")
         }
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "PLAYBACK_SDK_VERSION", "\"${version}-debug\"")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     libraryVariants.all {
         val variant = this
