@@ -57,7 +57,7 @@ android {
     }
 
     buildConfig {
-        buildConfigField("SDK_VERSION", provider { "\"${project.version}\"" })
+        buildConfigField("SDK_VERSION", provider { "${project.version}" })
     }
 
     buildTypes {
