@@ -1,7 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URI
 
-
 buildscript {
     repositories {
         google()
@@ -20,6 +19,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka") version "1.9.20" apply true
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
     `maven-publish`
 }
 
@@ -56,14 +56,21 @@ android {
         }
     }
 
+    buildConfig {
+        buildConfigField("SDK_VERSION", provider { "\"${project.version}\"" })
+    }
+
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             consumerProguardFiles("consumer-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
         }
     }
     compileOptions {

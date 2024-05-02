@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import com.bitmovin.player.casting.BitmovinCastManager
 import com.streamamg.api.player.PlaybackAPI
 import com.streamamg.api.player.PlaybackAPIService
+import com.streamamg.playback_sdk_android.BuildConfig
 import com.streamamg.player.ui.PlaybackUIView.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,9 @@ object PlaybackSDKManager {
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
+
+    val playbackSdkVersion = BuildConfig.SDK_VERSION
+
     //endregion
 
     //endregion
