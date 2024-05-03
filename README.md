@@ -140,7 +140,7 @@ In case a custom `user-agent` header for the request is set when creating a toke
 Example:
 
 ```kotlin
-PlaybackSDKManager.loadPlayer(entryID, authorizationToken, customUserAgent) { error -> 
+PlaybackSDKManager.initialize(playerApiKey, userAgent = customUserAgent) { error -> 
     // Handle player UI error 
 } 
 ```

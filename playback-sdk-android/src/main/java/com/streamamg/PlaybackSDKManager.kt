@@ -43,6 +43,7 @@ object PlaybackSDKManager {
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
+    private var userAgent: String? = null
 
     val playbackSdkVersion = BuildConfig.SDK_VERSION
 
@@ -58,11 +59,13 @@ object PlaybackSDKManager {
      * Initializes the playback SDK.
      * @param apiKey The API key for authentication.
      * @param baseURL The base URL for the playback API. Default is null.
+     * @param userAgent Custom user-agent header for the loading requests. Default is Android system http user agent.
      * @param completion Callback to be invoked upon completion of initialization.
      */
     fun initialize(
         apiKey: String,
         baseURL: String? = null,
+        userAgent: String? = System.getProperty("http.agent"),
         completion: (String?, SDKError?) -> Unit
     ) {
         if (apiKey.isEmpty()) {
@@ -77,9 +80,10 @@ object PlaybackSDKManager {
         playerInformationAPI = PlayerInformationAPIService(apiKey)
         playBackAPIService = PlaybackAPIService(apiKey)
         this.playBackAPI = playBackAPIService
+        this.userAgent = userAgent
 
         // Fetching player information
-        fetchPlayerInfo(completion)
+        fetchPlayerInfo(userAgent, completion)
     }
 
     //endregion
@@ -90,20 +94,18 @@ object PlaybackSDKManager {
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
-     * @param userAgent Custom user-agent header for the loading request. Default is Android system http user agent.
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
-        userAgent: String? = System.getProperty("http.agent"),
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
-            userAgent = userAgent,
+            userAgent = this.userAgent,
             onError = onError
         )
     }
@@ -120,10 +122,10 @@ object PlaybackSDKManager {
      * Fetches player information including Bitmovin license.
      * @param completion Callback to be invoked upon completion of fetching player information.
      */
-    private fun fetchPlayerInfo(completion: (String?, SDKError?) -> Unit) {
+    private fun fetchPlayerInfo(userAgent: String?, completion: (String?, SDKError?) -> Unit) {
         coroutineScope.launch {
             try {
-                val playerInfo = playerInformationAPI.getPlayerInformation().firstOrNull()
+                val playerInfo = playerInformationAPI.getPlayerInformation(userAgent).firstOrNull()
 
                 if (playerInfo?.player?.bitmovin?.license.isNullOrEmpty()) {
                     completion(null, SDKError.MissingLicense)

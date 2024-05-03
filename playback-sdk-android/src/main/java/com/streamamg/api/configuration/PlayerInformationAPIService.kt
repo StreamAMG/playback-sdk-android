@@ -10,14 +10,14 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 internal interface PlayerInformationAPI {
-    suspend fun getPlayerInformation(): Flow<PlayerInformationResponseModel>
+    suspend fun getPlayerInformation(userAgent: String?): Flow<PlayerInformationResponseModel>
 }
 
 internal class PlayerInformationAPIService(private val apiKey: String) : PlayerInformationAPI {
 
     private val baseURL = "https://api.playback.streamamg.com/v1"
     private val json = Json { ignoreUnknownKeys = true }
-    override suspend fun getPlayerInformation(): Flow<PlayerInformationResponseModel> {
+    override suspend fun getPlayerInformation(userAgent: String?): Flow<PlayerInformationResponseModel> {
         return flow {
             try {
                 val url = URL("$baseURL/player")
@@ -25,6 +25,9 @@ internal class PlayerInformationAPIService(private val apiKey: String) : PlayerI
                 connection.requestMethod = "GET"
                 connection.setRequestProperty("Accept", "application/json")
                 connection.setRequestProperty("x-api-key", apiKey)
+                if (!userAgent.isNullOrBlank()) {
+                    connection.setRequestProperty("user-agent", userAgent)
+                }
 
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
                     val responseText = connection.inputStream.bufferedReader().use { it.readText() }
