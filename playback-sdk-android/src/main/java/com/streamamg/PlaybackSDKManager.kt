@@ -43,6 +43,7 @@ object PlaybackSDKManager {
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
+    private var userAgent: String? = null
 
     val playbackSdkVersion = BuildConfig.SDK_VERSION
 
@@ -79,6 +80,7 @@ object PlaybackSDKManager {
         playerInformationAPI = PlayerInformationAPIService(apiKey)
         playBackAPIService = PlaybackAPIService(apiKey)
         this.playBackAPI = playBackAPIService
+        this.userAgent = userAgent
 
         // Fetching player information
         fetchPlayerInfo(userAgent, completion)
@@ -92,20 +94,18 @@ object PlaybackSDKManager {
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
-     * @param userAgent Custom user-agent header for the loading requests. Default is Android system http user agent.
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
-        userAgent: String? = System.getProperty("http.agent"),
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
-            userAgent = userAgent,
+            userAgent = this.userAgent,
             onError = onError
         )
     }
