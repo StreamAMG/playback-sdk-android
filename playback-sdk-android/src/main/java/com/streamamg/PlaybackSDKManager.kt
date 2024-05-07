@@ -2,11 +2,14 @@ package com.streamamg
 
 import PlayerInformationAPI
 import PlayerInformationAPIService
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import com.bitmovin.player.casting.BitmovinCastManager
 import com.streamamg.api.player.PlaybackAPI
 import com.streamamg.api.player.PlaybackAPIService
-import com.streamamg.player.ui.PlaybackUIView
+import com.streamamg.playback_sdk_android.BuildConfig
+import com.streamamg.player.ui.PlaybackUIView.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,7 +42,11 @@ object PlaybackSDKManager {
      * Base URL for the playback API.
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
-    internal lateinit var bitmovinLicense: String
+    internal var bitmovinLicense: String = ""
+    private var userAgent: String? = null
+
+    val playbackSdkVersion = BuildConfig.SDK_VERSION
+
     //endregion
 
     //endregion
@@ -52,11 +59,13 @@ object PlaybackSDKManager {
      * Initializes the playback SDK.
      * @param apiKey The API key for authentication.
      * @param baseURL The base URL for the playback API. Default is null.
+     * @param userAgent Custom user-agent header for the loading requests. Default is Android system http user agent.
      * @param completion Callback to be invoked upon completion of initialization.
      */
     fun initialize(
         apiKey: String,
         baseURL: String? = null,
+        userAgent: String? = System.getProperty("http.agent"),
         completion: (String?, SDKError?) -> Unit
     ) {
         if (apiKey.isEmpty()) {
@@ -64,14 +73,17 @@ object PlaybackSDKManager {
             return
         }
 
+        BitmovinCastManager.initialize()
+
         baseURL?.let { this.baseURL = it }
         amgAPIKey = apiKey
         playerInformationAPI = PlayerInformationAPIService(apiKey)
         playBackAPIService = PlaybackAPIService(apiKey)
         this.playBackAPI = playBackAPIService
+        this.userAgent = userAgent
 
         // Fetching player information
-        fetchPlayerInfo(completion)
+        fetchPlayerInfo(userAgent, completion)
     }
 
     //endregion
@@ -93,6 +105,7 @@ object PlaybackSDKManager {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
+            userAgent = this.userAgent,
             onError = onError
         )
     }
@@ -109,10 +122,10 @@ object PlaybackSDKManager {
      * Fetches player information including Bitmovin license.
      * @param completion Callback to be invoked upon completion of fetching player information.
      */
-    private fun fetchPlayerInfo(completion: (String?, SDKError?) -> Unit) {
+    private fun fetchPlayerInfo(userAgent: String?, completion: (String?, SDKError?) -> Unit) {
         coroutineScope.launch {
             try {
-                val playerInfo = playerInformationAPI.getPlayerInformation().firstOrNull()
+                val playerInfo = playerInformationAPI.getPlayerInformation(userAgent).firstOrNull()
 
                 if (playerInfo?.player?.bitmovin?.license.isNullOrEmpty()) {
                     completion(null, SDKError.MissingLicense)
@@ -147,10 +160,11 @@ object PlaybackSDKManager {
     fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
+        userAgent: String?,
         completion: (URL?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playBackAPI.getVideoDetails(entryId, authorizationToken)
+            playBackAPI.getVideoDetails(entryId, authorizationToken, userAgent)
                 .catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
@@ -177,5 +191,16 @@ object PlaybackSDKManager {
 
     //endregion
 
+    //region Chromecast
 
+    /**
+     * Each Activity that uses Cast related API's has to call the following function before using any cast related API.
+     * Update Chromecast context.
+     * @param context The context of the Activity.
+     */
+    fun updateCastContext(context: Context) {
+        BitmovinCastManager.getInstance().updateContext(context)
+    }
+
+    //endregion
 }

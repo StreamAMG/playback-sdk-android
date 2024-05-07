@@ -1,3 +1,4 @@
+
 Playback SDK  [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
 =========
 
@@ -122,12 +123,27 @@ To load the player UI in your application, use the `loadPlayer` method of the `P
 
 Example:
 
-```
+```kotlin
 PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
-// Handle player UI error 
+    // Handle player UI error 
 } 
 ```
 
+# Playing Access-Controlled Content
+To play premium or freemium on-demand and live videos, an `authorizationToken` has to be passed into the player. 
+Before loading the player, a call to CloudPay to start session must be made with the same token.
+```kotlin
+"$baseURL/sso/start?token=$authorizationToken"
+```
+In case a custom `user-agent` header for the request is set when creating a token, it should be passed to the player as well.  
+
+Example:
+
+```kotlin
+PlaybackSDKManager.initialize(playerApiKey, userAgent = customUserAgent) { error -> 
+    // Handle player UI error 
+} 
+```
 # Error Handling
 
 The `PlaybackSDKManager` provides error handling through sealed classes `SDKError` and `PlaybackAPIError`. These classes represent various errors that can occur during SDK and API operations respectively.
@@ -142,3 +158,15 @@ Handle errors based on these classes to provide appropriate feedback to users.
 Additionally, the package includes a singleton object `VideoPlayerPluginManager` for managing video player plugins. This object allows you to register, remove, and retrieve the currently selected video player plugin.
 
 For further details on how to use the `VideoPlayerPluginManager`, refer to the inline documentation provided in the code.
+
+# Chromecasting
+
+To use the Google Chromecast support, use the `updateCastContext` method of the `PlaybackSDKManager` singleton object, passing the context of the Activity otherwise the Casting will be disabled. Each Activity that uses Cast related API's has to call the following function before using any cast related API, e.g. in the `Activity.onCreate` function:
+
+```kotlin
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        PlaybackSDKManager.updateCastContext(this)
+        ...
+    }
+```

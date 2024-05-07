@@ -40,7 +40,8 @@ internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
      */
     override suspend fun getVideoDetails(
         entryId: String,
-        authorizationToken: String?
+        authorizationToken: String?,
+        userAgent: String?
     ): Flow<PlaybackResponseModel> = flow {
         val url = URL("${PlaybackSDKManager.baseURL}/entry/$entryId")
         (url.openConnection() as? HttpURLConnection)?.run {
@@ -49,6 +50,10 @@ internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
                 setRequestProperty("x-api-key", apiKey)
                 if (!authorizationToken.isNullOrBlank()) {
                     setRequestProperty("Authorization", "Bearer $authorizationToken")
+                }
+
+                if (!userAgent.isNullOrBlank()) {
+                    setRequestProperty("user-agent", userAgent)
                 }
 
                 val responseText = if (responseCode == HttpURLConnection.HTTP_OK) {
