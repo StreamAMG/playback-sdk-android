@@ -1,0 +1,606 @@
+{
+    "sections": [
+      {
+        "chapter": "Getting Started",
+        "estimatedTimeInMinutes": 60,
+        "title": "Playback SDK Overview",
+        "content": [
+          {
+            "inlineContent": [
+              {
+                "type": "text",
+                "text": "Playback SDK simplifies integrating video playback functionalities into OTT applications. It provides a unified interface for interacting with video APIs and managing playback logic."
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "inlineContent": [
+              {
+                "inlineContent": [
+                  {
+                    "type": "text",
+                    "text": "Key Features:"
+                  }
+                ],
+                "type": "strong"
+              }
+            ],
+            "type": "paragraph"
+          },
+          {
+            "items": [
+              {
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "Abstraction:"
+                          }
+                        ]
+                      },
+                      {
+                        "text": " Hides the complexities of underlying video APIs, allowing you to focus on the core playback experience.",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "inlineContent": [
+                      {
+                        "inlineContent": [
+                          {
+                            "text": "Flexibility:",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "strong"
+                      },
+                      {
+                        "type": "text",
+                        "text": " Supports different video providers and allows the creation of custom playback plugins for extended functionalities."
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "Error Handling:"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " Provides mechanisms to handle potential issues during playback and notify your application."
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ]
+              }
+            ],
+            "type": "unorderedList"
+          }
+        ],
+        "kind": "hero"
+      },
+      {
+        "tasks": [
+          {
+            "title": "Playback SDK",
+            "stepsSection": [
+                {
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "inlineContent": [
+                              {
+                                "type": "strong",
+                                "inlineContent": [
+                                  {
+                                    "text": "  ",
+                                    "type": "text"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "text",
+                                "text": " Add SDK to your Gradle file"
+                              },
+                              {
+                                "type": "text",
+                                "text": " "
+                              },
+                              {
+                                "inlineContent": [
+                                  {
+                                    "text": "Make sure this step is done before proceed to the next steps",
+                                    "type": "text"
+                                  }
+                                ],
+                                "type": "strong"
+                              }
+                            ]
+                          }
+                    ],
+                    "caption": [],
+                    "type": "step",
+                    "media": null,
+                    "code": "build.gradle.kts",
+                    "runtimePreview": null
+                },
+              {
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "text": " ",
+                            "type": "text"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " Initialize the Playback SDK by providing your API key and register the default player plugin."
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "inlineContent": [
+                          {
+                            "text": "Make sure this step is done when the app starts.",
+                            "type": "text"
+                          }
+                        ],
+                        "type": "strong"
+                      }
+                    ]
+                  }
+                ],
+                "caption": [],
+                "type": "step",
+                "media": null,
+                "code": "PlayBackDemoApp.kt",
+                "runtimePreview": null
+              },
+              {
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "  "
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": ""
+                      },
+                      {
+                        "text": " ",
+                        "type": "text"
+                      },
+                      {
+                        "type": "text",
+                        "text": "Load the player using the Playback SDK and handle any playback errors."
+                      }
+                    ]
+                  }
+                ],
+                "type": "step",
+                "media": null,
+                "code": "PlayerTestView.kt",
+                "runtimePreview": null,
+                "caption": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "text",
+                        "text": "In this step, the code utilizes the "
+                      },
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "text": "loadPlayer",
+                            "type": "text"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " function provided by the Playback SDK to initialize and load the video player. The function takes the entry ID and authorization token as parameters. Additionally, it includes a closure to handle any potential playback errors that may occur during the loading process."
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "type": "text",
+                        "text": "The "
+                      },
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "handlePlaybackError"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " function is called within the closure to handle the playback errors. It switches on the type of error received and provides appropriate error handling based on the type of error encountered."
+                      },
+                      {
+                        "type": "text",
+                        "text": " "
+                      },
+                      {
+                        "type": "text",
+                        "text": "The code also includes a placeholder comment to indicate where the removal of the player could be implemented in the "
+                      },
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "onDestroy"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " modifier."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "anchor": "PlayBack-SDK",
+            "contentSection": [
+              {
+                "content": [
+                  {
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "text": "Explore how to use StreamAMG Playback SDK.",
+                            "type": "text"
+                          }
+                        ]
+                      }
+                    ],
+                    "type": "paragraph"
+                  }
+                ],
+                "kind": "fullWidth"
+              }
+            ]
+          }
+        ],
+        "kind": "tasks"
+      }
+    ],
+    "hierarchy": {
+      "reference": "doc://PlaybackSDK/tutorials/Table-Of-Contents",
+      "modules": [
+        {
+          "reference": "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started",
+          "projects": [
+            {
+              "reference": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted",
+              "sections": [
+                {
+                  "kind": "task",
+                  "reference": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted#PlayBack-SDK"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "paths": [
+        [
+          "doc://PlaybackSDK/tutorials/Table-Of-Contents",
+          "doc://PlaybackSDK/tutorials/Table-Of-Contents/$volume",
+          "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started"
+        ]
+      ]
+    },
+    "kind": "project",
+    "metadata": {
+      "title": "Playback SDK Overview",
+      "category": "PlaybackSDK Tutorial",
+      "categoryPathComponent": "Table-Of-Contents",
+      "role": "project"
+    },
+    "schemaVersion": {
+      "major": 0,
+      "minor": 3,
+      "patch": 0
+    },
+    "variants": [
+      {
+        "traits": [
+          {
+            "interfaceLanguage": "kotlin"
+          }
+        ],
+        "paths": [
+          "/tutorials/playbacksdk/getstarted"
+        ]
+      }
+    ],
+    "identifier": {
+      "interfaceLanguage": "kotlin",
+      "url": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted"
+    },
+    "references": {
+      "PlayerTestView.kt": {
+        "identifier": "PlayerTestView.kt",
+        "content": [
+            "// Others imports",
+            "import com.streamamg.PlaybackAPIError",
+            "import com.streamamg.PlaybackSDKManager",
+            "import com.streamamg.PlaybackSDKManager.loadPlayer",
+            "import com.streamamg.playback_demo_android.data.SettingsManager",
+            "import com.streamamg.playback_demo_android.ui.theme.PlaybackdemoandroidTheme",
+            "import com.streamamg.player.plugin.VideoPlayerPluginManager",
+            "import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin",
+            "",
+            "class PlayerViewActivity : ComponentActivity() {",
+            "    override fun onCreate(savedInstanceState: Bundle?) {",
+            "        super.onCreate(savedInstanceState)",
+            "        setContent {",
+            "            val navController = rememberNavController()",
+            "            PlaybackDemoAndroidTheme {",
+            "                Surface(",
+            "                    modifier = Modifier.fillMaxSize(),",
+            "                    color = Color.White",
+            "                ) {",
+            "                    PlayerContent(entryId = \"\", authorizationToken = \"\")",
+            "                }",
+            "            }",
+            "        }",
+            "    }",
+            "}",
+            "",
+            "var customPlugin: BitmovinVideoPlayerPlugin? = null",
+            "",
+            "@Composable",
+            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "    val apiKey = \"API_KEY\",",
+            "    // Initialize SDK with the settings",
+            "    PlaybackSDKManager.initialize(apiKey) { license, error ->",
+            "        error?.let {",
+            "            errorMessage = it.toString()",
+            "        }",
+            "        customPlugin = BitmovinVideoPlayerPlugin()",
+            "        VideoPlayerPluginManager.registerPlugin(customPlugin!!)",
+            "    }",
+            "    if (authorizationToken.isEmpty()) {",
+            "        playerLoaded = true",
+            "    } else {",
+            "        // Need to start the SSO before using the playback API",
+            "        LaunchedEffect(Unit) {",
+            "            val response = makeAPICall(\"${BASE_URL}/sso/start?token=$authorizationToken\")",
+            "            when (response) {",
+            "                is ApiResponse.Success -> {",
+            "                    playerLoaded = true",
+            "                }",
+            "                is ApiResponse.Error -> {",
+            "                    Log.e(\"PlayerActivity\", \"API call failed with error: ${response.errorMessage}\")",
+            "                    playerLoaded = true // Loading anyway the player so we can test the error codes",
+            "                }",
+            "            }",
+            "        }",
+            "        if (playerLoaded) {",
+            "            Box(",
+            "                modifier = Modifier.fillMaxSize()",
+            "            ) {",
+            "                Box(",
+            "                    modifier = Modifier",
+            "                        .fillMaxWidth()",
+            "                        .aspectRatio(16f / 9f)",
+            "                        .align(Alignment.TopCenter)",
+            "                ) {",
+            "                    loadPlayer(entryId, authorizationToken) { error ->",
+            "                        Log.e(\"PlayerActivity\", error.message.toString())",
+            "                        when (error) {",
+            "                            is PlaybackAPIError.ApiError -> {",
+            "                                Log.e(",
+            "                                    \"PlayerActivity\",",
+            "                                    \"API Error: Code ${error.statusCode}, Message: ${error.message}, Reason: ${error.reason}\"",
+            "                                )",
+            "                                errorMessage =",
+            "                                    \"API Error: Code ${error.statusCode}, Message: ${error.message}, Reason: ${error.reason}\"",
+            "                            }",
+            "                            is PlaybackAPIError.NetworkError -> {",
+            "                                errorMessage = \"Network issue: ${error.error.localizedMessage}\"",
+            "                            }",
+            "                            is PlaybackAPIError.InitializationError -> {",
+            "                                errorMessage = \"Initialization failed.\"",
+            "                            }",
+            "                            else -> {",
+            "                                errorMessage = \"An unknown error occurred.\"",
+            "                            }",
+            "                        }",
+            "                    }",
+            "                    errorMessage?.let {",
+            "                        if (it.isNotEmpty()) {",
+            "                            Text(",
+            "                                text = it,",
+            "                                color = Color.Red,",
+            "                                modifier = Modifier.align(Alignment.BottomCenter)",
+            "                            )",
+            "                        }",
+            "                    }",
+            "                }",
+            "            }",
+            "        }",
+            "    }",
+            "}"
+        ],
+        "syntax": "swift",
+        "fileType": "kotlin",
+        "highlights": [],
+        "fileName": "PlayerTestView.kt",
+        "type": "file"
+      },
+      "build.gradle.kts": {
+        "identifier": "build.gradle.kts",
+        "highlights": [],
+        "fileType": "kotlin",
+        "type": "file",
+        "syntax": "java",
+        "fileName": null,
+        "content": [    
+            "dependencies {",
+            "   implementation 'com.github.StreamAMG:playback-sdk-android:x.y.z'",
+            "}"
+        ]
+      },
+      "PlayBackDemoApp.kt": {
+        "identifier": "PlayBackDemoApp.kt",
+        "highlights": [],
+        "fileType": "kotlin",
+        "type": "file",
+        "syntax": "swift",
+        "fileName": "PlayBackDemoApp.kt",
+        "content": [
+            "// Others imports",
+            "",
+            "import com.streamamg.PlaybackAPIError",
+            "import com.streamamg.PlaybackSDKManager",
+            "import com.streamamg.PlaybackSDKManager.loadPlayer",
+            "import com.streamamg.playback_demo_android.data.SettingsManager",
+            "import com.streamamg.playback_demo_android.ui.theme.PlaybackdemoandroidTheme",
+            "import com.streamamg.player.plugin.VideoPlayerPluginManager",
+            "import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin",
+            "",
+            "class PlayerViewActivity : ComponentActivity() {",
+            "",
+            "    override fun onCreate(savedInstanceState: Bundle?) {",
+            "        super.onCreate(savedInstanceState)",
+            "        setContent {",
+            "            val navController = rememberNavController()",
+            "            PlaybackDemoAndroidTheme {",
+            "                Surface(",
+            "                    modifier = Modifier.fillMaxSize(),",
+            "                    color = Color.White",
+            "                ) {",
+            "                    PlayerContent(entryId = \"\", authorizationToken = \"\")",
+            "                }",
+            "            }",
+            "        }",
+            "    }",
+            "}",
+            "",
+            "var customPlugin: BitmovinVideoPlayerPlugin? = null",
+            "",
+            "@Composable",
+            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "    ",
+            "    val apiKey = \"API_KEY\",",
+            "",
+            "    // Initialize SDK with the settings",
+            "    PlaybackSDKManager.initialize(apiKey) { license, error ->",
+            "",
+            "        error?.let {",
+            "            errorMessage = it.toString()",
+            "        }",
+            "",
+            "        customPlugin = BitmovinVideoPlayerPlugin()",
+            "        VideoPlayerPluginManager.registerPlugin(customPlugin!!)",
+            "    }",
+            "}"
+        ]
+      },
+      "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started": {
+        "title": "Getting Started",
+        "identifier": "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started",
+        "role": "article",
+        "url": "/tutorials/table-of-contents/getting-started",
+        "abstract": [],
+        "kind": "article",
+        "type": "topic"
+      },
+      "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted": {
+        "title": "Playback SDK Overview",
+        "abstract": [
+          {
+            "text": "Playback SDK simplifies integrating video playback functionalities into OTT applications. It provides a unified interface for interacting with video APIs and managing playback logic.",
+            "type": "text"
+          }
+        ],
+        "identifier": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted",
+        "url": "/tutorials/playbacksdk/getstarted",
+        "kind": "project",
+        "role": "project",
+        "estimatedTime": "30min",
+        "type": "topic"
+      },
+      "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted#PlayBack-SDK": {
+        "title": "Playback SDK",
+        "role": "pseudoSymbol",
+        "type": "section",
+        "url": "/tutorials/playbacksdk/getstarted#PlayBack-SDK",
+        "kind": "section",
+        "identifier": "doc://PlaybackSDK/tutorials/PlaybackSDK/GetStarted#PlayBack-SDK",
+        "abstract": [
+          {
+            "text": "Playback SDK simplifies integrating video playback functionalities into OTT applications. It provides a unified interface for interacting with video APIs and managing playback logic.",
+            "type": "text"
+          }
+        ]
+      },
+      "doc://PlaybackSDK/tutorials/Table-Of-Contents": {
+        "identifier": "doc://PlaybackSDK/tutorials/Table-Of-Contents",
+        "kind": "overview",
+        "role": "overview",
+        "abstract": [
+          {
+            "text": "Welcome to the PlaybackSDK tutorial! In this tutorial, you will learn how to integrate and use the PlaybackSDK in your Android applications.",
+            "type": "text"
+          }
+        ],
+        "url": "/tutorials/table-of-contents",
+        "title": "Introduction to PlaybackSDK",
+        "type": "topic"
+      }
+    }
+  }

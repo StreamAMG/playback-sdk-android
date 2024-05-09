@@ -142,3 +142,8 @@ Handle errors based on these classes to provide appropriate feedback to users.
 Additionally, the package includes a singleton object `VideoPlayerPluginManager` for managing video player plugins. This object allows you to register, remove, and retrieve the currently selected video player plugin.
 
 For further details on how to use the `VideoPlayerPluginManager`, refer to the inline documentation provided in the code.
+
+**Resources:**
+
+- **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
+- **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)
