@@ -1,7 +1,6 @@
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URI
 
-
 buildscript {
     repositories {
         google()
@@ -20,11 +19,12 @@ plugins {
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka") version "1.9.20" apply true
+    id("com.github.gmazzo.buildconfig") version "5.3.5"
     `maven-publish`
 }
 
 group = "com.streamamg"
-version = "0.3.0"
+version = "1.0.0"
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
@@ -56,14 +56,21 @@ android {
         }
     }
 
+    buildConfig {
+        buildConfigField("SDK_VERSION", provider { "${project.version}" })
+    }
+
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             consumerProguardFiles("consumer-rules.pro")
+        }
+        debug {
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -154,4 +161,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.bitmovin.player:player:3.61.0")
+    implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
 }
