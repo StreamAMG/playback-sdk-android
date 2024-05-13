@@ -170,3 +170,10 @@ To use the Google Chromecast support, use the `updateCastContext` method of the 
         ...
     }
 ```
+
+**Resources:**
+
+- **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
+- **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)
+
+
