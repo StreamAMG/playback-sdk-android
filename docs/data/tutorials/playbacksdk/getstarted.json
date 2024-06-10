@@ -282,6 +282,54 @@
                       {
                         "type": "text",
                         "text": " modifier."
+                      },
+                      {
+                        "type": "paragraph",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "If you want to allow users to access free content or if you're implementing a guest mode, you can pass an empty string or "
+                          },
+                          {
+                            "type": "strong",
+                            "inlineContent": [
+                              {
+                                "type": "text",
+                                "text": "nil"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " value as the "
+                          },
+                          {
+                            "type": "strong",
+                            "inlineContent": [
+                              {
+                                "type": "text",
+                                "text": "authorizationToken"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " when calling the "
+                          },                                            
+                          {
+                            "type": "strong",
+                            "inlineContent": [
+                              {
+                                "type": "text",
+                                "text": "loadPlayer"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "text",
+                            "text": " function. This will bypass the need for authentication, enabling unrestricted access to the specified content."
+                          }
+                        ]                        
                       }
                     ]
                   }
