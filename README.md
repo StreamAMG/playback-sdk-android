@@ -144,6 +144,11 @@ PlaybackSDKManager.initialize(playerApiKey, userAgent = customUserAgent) { error
     // Handle player UI error 
 } 
 ```
+
+# Playing Free Content
+If you want to allow users to access free content or if you're implementing a guest mode, you can pass an empty string or `null` 
+value as the `authorizationToken` parameter when calling the `loadPlayer` function. This will bypass the need for authentication, enabling unrestricted access to the specified content.
+
 # Error Handling
 
 The `PlaybackSDKManager` provides error handling through sealed classes `SDKError` and `PlaybackAPIError`. These classes represent various errors that can occur during SDK and API operations respectively.
