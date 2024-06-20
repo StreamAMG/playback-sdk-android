@@ -204,19 +204,6 @@
                       {
                         "type": "text",
                         "text": " This step is only required for content that needs a token, when using OkHttp or other 3rd party frameworks that overwrite the standard user-agent header with their own.\nIf the content requires starting a CloudPay session, it’s important that the request to start the session has the same user-agent header as the video loading requests from the player. This can be achieved either by disabling the overwriting behaviour in the 3rd party networking framework you’re using, or by passing a userAgent parameter to the initialize method, like in this example with OkHttp."
-                      },
-                      {
-                        "type": "text",
-                        "text": " "
-                      },
-                      {
-                        "inlineContent": [
-                          {
-                            "text": "Make sure this step is done when the app starts.",
-                            "type": "text"
-                          }
-                        ],
-                        "type": "strong"
                       }
                     ]
                   }
