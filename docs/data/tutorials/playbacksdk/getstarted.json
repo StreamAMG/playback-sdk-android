@@ -196,6 +196,38 @@
                         "type": "strong",
                         "inlineContent": [
                           {
+                            "type": "text",
+                            "text": "  "
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": ""
+                      },
+                      {
+                        "text": " ",
+                        "type": "text"
+                      },
+                      {
+                        "type": "text",
+                        "text": "Add custom user-agent header."
+                      }
+                    ]
+                  }
+                ],
+                "type": "step",
+                "media": null,
+                "code": "PlayBackDemoApp.kt",
+                "runtimePreview": null,
+                "caption": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
                             "text": " ",
                             "type": "text"
                           }
@@ -207,12 +239,7 @@
                       }
                     ]
                   }
-                ],
-                "caption": [],
-                "type": "step",
-                "media": null,
-                "code": "PlayBackDemoApp.kt",
-                "runtimePreview": null
+                ]
               },
               {
                 "content": [
