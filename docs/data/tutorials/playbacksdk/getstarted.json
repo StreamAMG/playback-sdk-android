@@ -652,6 +652,78 @@
             "}"
         ]
       },
+      "PlayBackDemoAppWithUserAgent.kt": {
+          "syntax": "swift",
+          "fileName": "PlayBackDemoAppWithUserAgent.kt",
+          "highlights": [
+              {
+                  "line": 33
+              },
+              {
+                  "line": 33
+              },
+              {
+                  "line": 35
+              }
+          ],
+          "identifier": "PlayBackDemoAppWithUserAgent.kt",
+          "fileType": "kotlin",
+          "type": "file",
+          "content": [
+            "// Others imports",
+            "",
+            "import com.streamamg.PlaybackAPIError",
+            "import com.streamamg.PlaybackSDKManager",
+            "import com.streamamg.PlaybackSDKManager.loadPlayer",
+            "import com.streamamg.playback_demo_android.data.SettingsManager",
+            "import com.streamamg.playback_demo_android.ui.theme.PlaybackdemoandroidTheme",
+            "import com.streamamg.player.plugin.VideoPlayerPluginManager",
+            "import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin",
+            "",
+            "class PlayerViewActivity : ComponentActivity() {",
+            "",
+            "    override fun onCreate(savedInstanceState: Bundle?) {",
+            "        super.onCreate(savedInstanceState)",
+            "        setContent {",
+            "            val navController = rememberNavController()",
+            "            PlaybackDemoAndroidTheme {",
+            "                Surface(",
+            "                    modifier = Modifier.fillMaxSize(),",
+            "                    color = Color.White",
+            "                ) {",
+            "                    PlayerContent(entryId = \"\", authorizationToken = \"\")",
+            "                }",
+            "            }",
+            "        }",
+            "    }",
+            "}",
+            "",
+            "var customPlugin: BitmovinVideoPlayerPlugin? = null",
+            "",
+            "@Composable",
+            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "    ",
+            "    val apiKey = \"API_KEY\",",
+            "",
+            "    // Should match the user agent of the HTTP client used in the app",
+            "    val customUserAgent = \"okhttp/${okhttp3.OkHttp.VERSION}\"",
+            "",
+            "    // Initialize SDK with the settings",
+            "    PlaybackSDKManager.initialize(",
+            "        apiKey = apiKey,",
+            "        userAgent = customUserAgent,",
+            "    ) { license, error ->",
+            "",
+            "        error?.let {",
+            "            errorMessage = it.toString()",
+            "        }",
+            "",
+            "        customPlugin = BitmovinVideoPlayerPlugin()",
+            "        VideoPlayerPluginManager.registerPlugin(customPlugin!!)",
+            "    }",
+            "}"
+          ]
+      },
       "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started": {
         "title": "Getting Started",
         "identifier": "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started",
