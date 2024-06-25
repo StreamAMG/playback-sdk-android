@@ -130,17 +130,25 @@ PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
 ```
 
 # Playing Access-Controlled Content
-To play premium or freemium on-demand and live videos, an `authorizationToken` has to be passed into the player. 
-Before loading the player, a call to CloudPay to start session must be made with the same token.
+To play on-demand and live videos that require authorization, at some point before loading the player your app must call CloudPay to start session, passing the authorization token:
 ```kotlin
 "$baseURL/sso/start?token=$authorizationToken"
 ```
-In case a custom `user-agent` header for the request is set when creating a token, it should be passed to the player as well.  
+Then the same token should be passed into the `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
+> [!NOTE]
+> If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
+
+## Configure user-agent
+Sometimes a custom `user-agent` header is automatically set for the requests on Android when creating a token and starting a session. `OkHttp` and other 3rd party networking frameworks can modify this header to include information about themselves. In such cases they should either be configured to not modify the header, or the custom header should be passed to the player as well.
 
 Example:
 
 ```kotlin
-PlaybackSDKManager.initialize(playerApiKey, userAgent = customUserAgent) { error -> 
+PlaybackSDKManager.initialize(
+    apiKey = apiKey,
+    baseUrl = baseUrl,
+    userAgent = customUserAgent
+) { error -> 
     // Handle player UI error 
 } 
 ```
@@ -176,7 +184,7 @@ To use the Google Chromecast support, use the `updateCastContext` method of the 
     }
 ```
 
-**Resources:**
+# Resources
 
 - **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
 - **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)

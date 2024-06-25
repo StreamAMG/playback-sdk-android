@@ -211,6 +211,60 @@
                       },
                       {
                         "type": "text",
+                        "text": "Add custom user-agent header."
+                      }
+                    ]
+                  }
+                ],
+                "type": "step",
+                "media": null,
+                "code": "PlayBackDemoAppWithUserAgent.kt",
+                "runtimePreview": null,
+                "caption": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "text": " ",
+                            "type": "text"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": " This step is only required for content that needs a token, when using OkHttp or other 3rd party frameworks that overwrite the standard user-agent header with their own.\nIf the content requires starting a CloudPay session, it’s important that the request to start the session has the same user-agent header as the video loading requests from the player. This can be achieved either by disabling the overwriting behaviour in the 3rd party networking framework you’re using, or by passing a userAgent parameter to the initialize method, like in this example with OkHttp."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "inlineContent": [
+                      {
+                        "type": "strong",
+                        "inlineContent": [
+                          {
+                            "type": "text",
+                            "text": "  "
+                          }
+                        ]
+                      },
+                      {
+                        "type": "text",
+                        "text": ""
+                      },
+                      {
+                        "text": " ",
+                        "type": "text"
+                      },
+                      {
+                        "type": "text",
                         "text": "Load the player using the Playback SDK and handle any playback errors."
                       }
                     ]
@@ -597,6 +651,87 @@
             "    }",
             "}"
         ]
+      },
+      "PlayBackDemoAppWithUserAgent.kt": {
+          "syntax": "swift",
+          "fileName": "PlayBackDemoAppWithUserAgent.kt",
+          "highlights": [
+              {
+                  "line": 36
+              },
+              {
+                  "line": 37
+              },
+              {
+                  "line": 40
+              },
+              {
+                  "line": 41
+              },
+              {
+                  "line": 42
+              },
+              {
+                  "line": 43
+              }
+          ],
+          "identifier": "PlayBackDemoAppWithUserAgent.kt",
+          "fileType": "kotlin",
+          "type": "file",
+          "content": [
+            "// Others imports",
+            "",
+            "import com.streamamg.PlaybackAPIError",
+            "import com.streamamg.PlaybackSDKManager",
+            "import com.streamamg.PlaybackSDKManager.loadPlayer",
+            "import com.streamamg.playback_demo_android.data.SettingsManager",
+            "import com.streamamg.playback_demo_android.ui.theme.PlaybackdemoandroidTheme",
+            "import com.streamamg.player.plugin.VideoPlayerPluginManager",
+            "import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin",
+            "",
+            "class PlayerViewActivity : ComponentActivity() {",
+            "",
+            "    override fun onCreate(savedInstanceState: Bundle?) {",
+            "        super.onCreate(savedInstanceState)",
+            "        setContent {",
+            "            val navController = rememberNavController()",
+            "            PlaybackDemoAndroidTheme {",
+            "                Surface(",
+            "                    modifier = Modifier.fillMaxSize(),",
+            "                    color = Color.White",
+            "                ) {",
+            "                    PlayerContent(entryId = \"\", authorizationToken = \"\")",
+            "                }",
+            "            }",
+            "        }",
+            "    }",
+            "}",
+            "",
+            "var customPlugin: BitmovinVideoPlayerPlugin? = null",
+            "",
+            "@Composable",
+            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "    ",
+            "    val apiKey = \"API_KEY\",",
+            "",
+            "    // Should match the user agent of the HTTP client used in the app",
+            "    val customUserAgent = \"okhttp/${okhttp3.OkHttp.VERSION}\"",
+            "",
+            "    // Initialize SDK with the settings",
+            "    PlaybackSDKManager.initialize(",
+            "        apiKey = apiKey,",
+            "        userAgent = customUserAgent,",
+            "    ) { license, error ->",
+            "",
+            "        error?.let {",
+            "            errorMessage = it.toString()",
+            "        }",
+            "",
+            "        customPlugin = BitmovinVideoPlayerPlugin()",
+            "        VideoPlayerPluginManager.registerPlugin(customPlugin!!)",
+            "    }",
+            "}"
+          ]
       },
       "doc://PlaybackSDK/tutorials/Table-Of-Contents/Getting-Started": {
         "title": "Getting Started",
