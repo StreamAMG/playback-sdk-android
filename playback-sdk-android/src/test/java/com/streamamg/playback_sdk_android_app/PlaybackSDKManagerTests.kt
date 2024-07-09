@@ -13,8 +13,8 @@ import java.net.URL
 class PlaybackSDKManagerTests {
 
     private lateinit var manager: PlaybackSDKManager
-    private val apiKey = "f3Beljhmlz2ea7M9TfErE6mKPsAcY3BrasMMEG24"
-    private val entryID = "0_k3mz0mf8"
+    private val apiKey = "EJEZPIezBkaf0EQ7ey5Iu2MDA2ARUkgc79eyDOnG"
+    private val entryID = "0_qt9cy11s"
 
     @Before
     fun setUp() {
@@ -31,6 +31,17 @@ class PlaybackSDKManagerTests {
         val completion: (String?, SDKError?) -> Unit = { _, _ -> }
         runBlocking {
             manager.initialize(apiKey) { license, error ->
+                assertNotNull(license)
+                assertNull(error)
+            }
+        }
+    }
+
+    @Test
+    fun testInitializeWithCustomUserAgent() {
+        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
+        runBlocking {
+            manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
                 assertNotNull(license)
                 assertNull(error)
             }
@@ -61,7 +72,7 @@ class PlaybackSDKManagerTests {
     @Composable
     @Test
     fun testLoadPlayer() {
-        val player = manager.loadPlayer(entryID, "authToken", "userAgent") {}
+        val player = manager.loadPlayer(entryID, "authToken", ) {}
         assertNotNull(player)
     }
 }
