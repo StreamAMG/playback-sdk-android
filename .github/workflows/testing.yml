@@ -2,7 +2,7 @@ name: Android Build and Test
 
 on:
   push:
-    branches: [ "feature/unit-test", "main", "release/*"]
+    branches: [ "feature/unit-test", "main", "release/*", "feature/ZEUS-4174-unit-tests-fix"]
   pull_request:
     branches: [ "feature/unit-test", "main", "release/*" ]
 
