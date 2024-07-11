@@ -16,11 +16,14 @@ import com.bitmovin.player.ui.notification.PlayerNotificationManager
 import com.streamamg.PlaybackSDKManager
 import com.streamamg.playback_sdk_android.R
 
-private const val NOTIFICATION_CHANNEL_ID = "com.streamamg.playback"
-private const val NOTIFICATION_ID = 1
-private const val EMPTY_CHANNEL_DESCRIPTION = 0
-
 class BackgroundPlaybackService : Service() {
+
+    companion object {
+        private const val NOTIFICATION_CHANNEL_ID = "com.streamamg.playback"
+        private const val NOTIFICATION_ID = 1
+        private const val EMPTY_CHANNEL_DESCRIPTION = 0
+    }
+
     // Binder given to clients
     private val binder = BackgroundBinder()
     private var bound = 0
@@ -104,6 +107,9 @@ class BackgroundPlaybackService : Service() {
 
     override fun onUnbind(intent: Intent): Boolean {
         bound--
+        if (bound == 0 && player?.isPlaying == false) {
+            stopSelf()
+        }
         return super.onUnbind(intent)
     }
 

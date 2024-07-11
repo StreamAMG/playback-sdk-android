@@ -46,18 +46,14 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     private lateinit var hlsUrl: String
     private lateinit var playerView: PlayerView
-    var playerConfig: VideoPlayerConfig? = null
+    var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private var bound = false
     private val fullscreen = mutableStateOf(false)
 
     override fun setup(config: VideoPlayerConfig) {
-        // Setup the PlayerConfig for the PlayerView
-        if (playerConfig == null) {
-            playerConfig = VideoPlayerConfig()
-        }
-        playerConfig?.playbackConfig?.autoplayEnabled = config.playbackConfig.autoplayEnabled
-        playerConfig?.playbackConfig?.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
+        playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
+        playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
     }
 
     @Composable
@@ -66,12 +62,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         val lifecycle = LocalLifecycleOwner.current.lifecycle
         val observers = remember { mutableListOf<DefaultLifecycleObserver>() }
 
-        // Set the default PlayerConfig for the PlayerView in case setup() was not called
-        if (playerConfig == null) {
-            playerConfig = VideoPlayerConfig()
-        }
-
-        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == true) {
+        if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
                 // Managing new permissions for the Background service notifications
                 RequestMissingPermissions()
@@ -86,7 +77,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             modifier = Modifier.fillMaxSize(),
             factory = { context ->
 
-                if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == false) {
+                if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                     // Init the Player without the Background service
                     val playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
                     playerBind = Player(context, playerConfig)
@@ -99,31 +90,31 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
                 val observer = object : DefaultLifecycleObserver {
                     override fun onStart(owner: LifecycleOwner) {
-                        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == false) {
-                            if (playerConfig?.playbackConfig?.autoplayEnabled == true) {
+                        if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
+                            if (playerConfig.playbackConfig.autoplayEnabled) {
                                 playerView.player?.play()
                             }
                         }
                     }
                     override fun onResume(owner: LifecycleOwner) {
-                        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == false) {
-                            if (playerConfig?.playbackConfig?.autoplayEnabled == true) {
+                        if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
+                            if (playerConfig.playbackConfig.autoplayEnabled) {
                                 playerView.player?.play()
                             }
                         }
                     }
                     override fun onPause(owner: LifecycleOwner) {
-                        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == false) {
+                        if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                             playerView.player?.pause()
                         }
                     }
                     override fun onStop(owner: LifecycleOwner) {
-                        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == false) {
+                        if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                             playerView.player?.pause()
                         }
                     }
                     override fun onDestroy(owner: LifecycleOwner) {
-                        if (playerConfig?.playbackConfig?.backgroundPlaybackEnabled == true) {
+                        if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                             // Stop and unbind the Background service and reset the Player reference
                             backgroundService(false, context)
                             bound = false
@@ -210,11 +201,9 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             val intent = Intent(context, BackgroundPlaybackService::class.java)
             context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
             context.startService(intent)
-        } else {
-            if (bound) {
-                context.stopService(Intent(context, BackgroundPlaybackService::class.java))
-                context.unbindService(mConnection)
-            }
+        } else if (bound) {
+            context.stopService(Intent(context, BackgroundPlaybackService::class.java))
+            context.unbindService(mConnection)
         }
     }
 
@@ -269,7 +258,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             playerBind?.load(SourceConfig.fromUrl(hlsUrl))
         }
 
-        if (playerConfig?.playbackConfig?.autoplayEnabled == true) {
+        if (playerConfig.playbackConfig.autoplayEnabled) {
             playerView.player?.play()
         }
     }
