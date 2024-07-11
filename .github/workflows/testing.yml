@@ -9,14 +9,14 @@ on:
 jobs:
 
   Gradle-Build:
-    name: Gradle build -> Check-out the repository and testing
+    name: Gradle build and test
     runs-on: macos-latest
 
     steps:
-      - name: Check-out the repository under $GITHUB_WORKSPACE
+      - name: Check-out the repository
         uses: actions/checkout@v3
 
-      - name: Downloading and setting up a Java 17, zulu distribution
+      - name: Downloading and setting up Java 17 (Zulu distribution)
         uses: actions/setup-java@v3.3.0
         with:
           distribution: 'zulu'
@@ -26,8 +26,29 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission for Gradle Wrapper
         run: chmod +x gradlew
 
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Android SDK components
+        uses: actions/cache@v2
+        with:
+          path: ~/.android
+          key: ${{ runner.os }}-android-${{ hashFiles('**/build.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-android-
+
       - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --warning-mode=all
+        run: |
+          ./gradlew testDebugUnitTest --warning-mode=all --stacktrace
+          if [ $? -ne 0 ]; then
+            echo "Unit tests failed"
+            exit 1
+          fi
