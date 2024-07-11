@@ -3,7 +3,13 @@ package com.streamamg.playback_sdk_android_app
 import androidx.compose.runtime.Composable
 import com.streamamg.PlaybackSDKManager
 import com.streamamg.SDKError
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -16,8 +22,11 @@ class PlaybackSDKManagerTests {
     private val apiKey = "EJEZPIezBkaf0EQ7ey5Iu2MDA2ARUkgc79eyDOnG"
     private val entryID = "0_qt9cy11s"
 
+    val scope = TestScope()
+
     @Before
     fun setUp() {
+        Dispatchers.setMain(StandardTestDispatcher(scope.testScheduler))
         manager = PlaybackSDKManager
     }
 
@@ -27,45 +36,33 @@ class PlaybackSDKManagerTests {
     }
 
     @Test
-    fun testInitializeWithValidAPIKey() {
-        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.initialize(apiKey) { license, error ->
-                assertNotNull(license)
-                assertNull(error)
-            }
+    fun testInitializeWithValidAPIKey() = runTest {
+        manager.initialize(apiKey) { license, error ->
+            assertNotNull(license)
+            assertNull(error)
         }
     }
 
     @Test
-    fun testInitializeWithCustomUserAgent() {
-        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
-                assertNotNull(license)
-                assertNull(error)
-            }
+    fun testInitializeWithCustomUserAgent() = runTest {
+        manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
+            assertNotNull(license)
+            assertNull(error)
         }
     }
 
     @Test
-    fun testLoadHLSStream() {
-        val completion: (URL?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.loadHLSStream(entryID, null, null) { hlsURL, error ->
-                assertNotNull(hlsURL)
-                assertNull(error)
-            }
+    fun testLoadHLSStream() = runTest {
+        manager.loadHLSStream(entryID, null, null) { hlsURL, error ->
+            assertNotNull(hlsURL)
+            assertNull(error)
         }
     }
 
     @Test
-    fun testInitializeWithEmptyAPIKey() {
-        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.initialize("") { _, error ->
-                assertNull(error)
-            }
+    fun testInitializeWithEmptyAPIKey() = runTest {
+        manager.initialize("", userAgent =  "userAgent") { _, error ->
+            assertNull(error)
         }
     }
 
