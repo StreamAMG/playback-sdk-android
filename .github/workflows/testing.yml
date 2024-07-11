@@ -10,7 +10,7 @@ jobs:
 
   Gradle-Build:
     name: Gradle build -> Check-out the repository and testing
-    runs-on: self-hosted
+    runs-on: macos-latest
 
     steps:
       - name: Check-out the repository under $GITHUB_WORKSPACE
