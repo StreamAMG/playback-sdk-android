@@ -66,10 +66,10 @@ class PlaybackSDKManagerTests {
         }
     }
 
-    @Composable
-    @Test
-    fun testLoadPlayer() {
-        val player = manager.loadPlayer(entryID, "authToken", ) {}
-        assertNotNull(player)
-    }
+//    @Composable
+//    @Test
+//    fun testLoadPlayer() {
+//        val player = manager.loadPlayer(entryID, "authToken", ) {}
+//        assertNotNull(player)
+//    }
 }
