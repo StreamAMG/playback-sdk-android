@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.streamamg.player.plugin.VideoPlayerPlugin
+import com.streamamg.player.plugin.VideoPlayerConfig
 
 class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     private var mediaPlayer: MediaPlayer? = null
@@ -19,7 +20,7 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     override val version: String
         get() = "1.0"
 
-    override fun setup() {
+    override fun setup(config: VideoPlayerConfig) {
         mediaPlayer = MediaPlayer()
     }
 
