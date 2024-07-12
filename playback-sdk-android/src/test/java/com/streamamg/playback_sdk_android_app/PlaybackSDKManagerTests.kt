@@ -1,20 +1,15 @@
 package com.streamamg.playback_sdk_android_app
 
-import androidx.compose.runtime.Composable
 import com.streamamg.PlaybackSDKManager
-import com.streamamg.SDKError
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import java.net.URL
 
 class PlaybackSDKManagerTests {
 
@@ -37,7 +32,7 @@ class PlaybackSDKManagerTests {
 
     @Test
     fun testInitializeWithValidAPIKey() = runTest {
-        manager.initialize(apiKey) { license, error ->
+        manager.initialize(apiKey, userAgent =  "userAgent") { license, error ->
             assertNotNull(license)
             assertNull(error)
         }
@@ -53,7 +48,11 @@ class PlaybackSDKManagerTests {
 
     @Test
     fun testLoadHLSStream() = runTest {
-        manager.loadHLSStream(entryID, null, null) { hlsURL, error ->
+        manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
+            assertNotNull(license)
+            assertNull(error)
+        }
+        manager.loadHLSStream(entryID, null, "userAgent") { hlsURL, error ->
             assertNotNull(hlsURL)
             assertNull(error)
         }
