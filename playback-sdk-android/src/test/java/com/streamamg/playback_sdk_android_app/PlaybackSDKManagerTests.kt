@@ -61,7 +61,7 @@ class PlaybackSDKManagerTests {
     @Test
     fun testInitializeWithEmptyAPIKey() = runTest {
         manager.initialize("", userAgent =  "userAgent") { _, error ->
-            assertNull(error)
+            assertNotNull(error) // Expect an error with empty API key
         }
     }
 
