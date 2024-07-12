@@ -46,7 +46,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     private lateinit var hlsUrl: String
     private lateinit var playerView: PlayerView
-    var playerConfig = VideoPlayerConfig()
+    private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private var bound = false
     private val fullscreen = mutableStateOf(false)

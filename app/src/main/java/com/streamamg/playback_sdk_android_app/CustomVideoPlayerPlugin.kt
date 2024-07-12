@@ -14,6 +14,7 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 
 class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     private var mediaPlayer: MediaPlayer? = null
+    private var playerConfig = VideoPlayerConfig()
 
     override val name: String
         get() = "Native Media Player Plugin"
@@ -21,15 +22,13 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
         get() = "1.0"
 
     override fun setup(config: VideoPlayerConfig) {
-        mediaPlayer = MediaPlayer()
+        playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
+        playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
     }
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
-        val config = VideoPlayerConfig()
-        config.playbackConfig.autoplayEnabled = true
-        config.playbackConfig.backgroundPlaybackEnabled = false
-        setup(config)
+        mediaPlayer = MediaPlayer()
 
         val textureView = rememberTextureView()
 
@@ -39,7 +38,9 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
                 // When MediaPlayer is prepared, set the surface texture
                 textureView.surfaceTexture?.let {
                     mp.setSurface(Surface(it))
-                    mp.start()
+                    if (playerConfig.playbackConfig.autoplayEnabled) {
+                        mp.start()
+                    }
                 }
             }
             prepareAsync()
