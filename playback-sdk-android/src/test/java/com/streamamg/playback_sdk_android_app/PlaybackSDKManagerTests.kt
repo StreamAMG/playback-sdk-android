@@ -39,14 +39,6 @@ class PlaybackSDKManagerTests {
     }
 
     @Test
-    fun testInitializeWithCustomUserAgent() = runTest {
-        manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
-            assertNotNull(license)
-            assertNull(error)
-        }
-    }
-
-    @Test
     fun testLoadHLSStream() = runTest {
         manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
             assertNotNull(license)
@@ -64,11 +56,4 @@ class PlaybackSDKManagerTests {
             assertNotNull(error) // Expect an error with empty API key
         }
     }
-
-//    @Composable
-//    @Test
-//    fun testLoadPlayer() {
-//        val player = manager.loadPlayer(entryID, "authToken", ) {}
-//        assertNotNull(player)
-//    }
 }
