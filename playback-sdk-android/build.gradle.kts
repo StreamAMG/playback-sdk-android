@@ -56,9 +56,9 @@ android {
         }
     }
 
-    buildConfig {
-        buildConfigField("SDK_VERSION", provider { "${project.version}" })
-    }
+//    buildConfig {
+//        buildConfigField("SDK_VERSION", provider { "${project.version}" })
+//    }
 
     buildTypes {
         release {
@@ -71,6 +71,14 @@ android {
         }
         debug {
             isMinifyEnabled = false
+        }
+
+        create("qa") {
+            initWith(getByName("debug"))
+        }
+
+        create("staging") {
+            initWith(getByName("debug"))
         }
     }
     compileOptions {
@@ -91,13 +99,13 @@ android {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 tasks.dokkaGfm {
