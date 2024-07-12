@@ -95,7 +95,7 @@ class BackgroundPlaybackService : Service() {
         player?.destroy()
         player = null
 
-        stopSelf()
+//        stopSelf()
 
         super.onDestroy()
     }
@@ -107,9 +107,9 @@ class BackgroundPlaybackService : Service() {
 
     override fun onUnbind(intent: Intent): Boolean {
         bound--
-        if (bound == 0 && player?.isPlaying == false) {
-            stopSelf()
-        }
+//        if (bound == 0 && player?.isPlaying == false) {
+//            stopSelf()
+//        }
         return super.onUnbind(intent)
     }
 
