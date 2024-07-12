@@ -26,7 +26,11 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
-        setup()
+        val config = VideoPlayerConfig()
+        config.playbackConfig.autoplayEnabled = true
+        config.playbackConfig.backgroundPlaybackEnabled = false
+        setup(config)
+
         val textureView = rememberTextureView()
 
         mediaPlayer?.apply {
