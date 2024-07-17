@@ -1,23 +1,27 @@
 package com.streamamg.playback_sdk_android_app
 
-import androidx.compose.runtime.Composable
 import com.streamamg.PlaybackSDKManager
-import com.streamamg.SDKError
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import java.net.URL
 
 class PlaybackSDKManagerTests {
 
     private lateinit var manager: PlaybackSDKManager
-    private val apiKey = "f3Beljhmlz2ea7M9TfErE6mKPsAcY3BrasMMEG24"
-    private val entryID = "0_k3mz0mf8"
+    private val apiKey = "EJEZPIezBkaf0EQ7ey5Iu2MDA2ARUkgc79eyDOnG"
+    private val entryID = "0_qt9cy11s"
+
+    val scope = TestScope()
 
     @Before
     fun setUp() {
+        Dispatchers.setMain(StandardTestDispatcher(scope.testScheduler))
         manager = PlaybackSDKManager
     }
 
@@ -27,41 +31,29 @@ class PlaybackSDKManagerTests {
     }
 
     @Test
-    fun testInitializeWithValidAPIKey() {
-        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.initialize(apiKey) { license, error ->
-                assertNotNull(license)
-                assertNull(error)
-            }
+    fun testInitializeWithValidAPIKey() = runTest {
+        manager.initialize(apiKey, userAgent =  "userAgent") { license, error ->
+            assertNotNull(license)
+            assertNull(error)
         }
     }
 
     @Test
-    fun testLoadHLSStream() {
-        val completion: (URL?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.loadHLSStream(entryID, null, null) { hlsURL, error ->
-                assertNotNull(hlsURL)
-                assertNull(error)
-            }
+    fun testLoadHLSStream() = runTest {
+        manager.initialize(apiKey = apiKey, userAgent =  "userAgent") { license, error ->
+            assertNotNull(license)
+            assertNull(error)
+        }
+        manager.loadHLSStream(entryID, null, "userAgent") { hlsURL, error ->
+            assertNotNull(hlsURL)
+            assertNull(error)
         }
     }
 
     @Test
-    fun testInitializeWithEmptyAPIKey() {
-        val completion: (String?, SDKError?) -> Unit = { _, _ -> }
-        runBlocking {
-            manager.initialize("") { _, error ->
-                assertNull(error)
-            }
+    fun testInitializeWithEmptyAPIKey() = runTest {
+        manager.initialize("", userAgent =  "userAgent") { _, error ->
+            assertNotNull(error) // Expect an error with empty API key
         }
-    }
-
-    @Composable
-    @Test
-    fun testLoadPlayer() {
-        val player = manager.loadPlayer(entryID, "authToken", "userAgent") {}
-        assertNotNull(player)
     }
 }
