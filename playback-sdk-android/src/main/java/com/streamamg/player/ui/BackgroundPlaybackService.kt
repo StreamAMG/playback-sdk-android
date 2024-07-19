@@ -22,10 +22,29 @@ class BackgroundPlaybackService : Service() {
         private const val NOTIFICATION_CHANNEL_ID = "com.streamamg.playback"
         private const val NOTIFICATION_ID = 1
         private const val EMPTY_CHANNEL_DESCRIPTION = 0
+
+        @Volatile
+        var isRunning = false
+
+        private var player: Player? = null
+
+        fun setPlayer(context: Context) {
+            if (player == null) {
+                val playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
+                player = Player(context, playerConfig)
+            }
+        }
+
+        fun releasePlayer() {
+            player?.destroy()
+            player = null
+        }
+
+        val sharedPlayer: Player?
+            get() = player
     }
 
     // Binder given to clients
-    private val binder = BackgroundBinder()
     private var bound = 0
 
     private var player: Player? = null
@@ -52,14 +71,14 @@ class BackgroundPlaybackService : Service() {
      */
     inner class BackgroundBinder : Binder() {
         // Return this instance of Player so clients can use the player instance
-        val player get() = this@BackgroundPlaybackService.player
+        val player get() = sharedPlayer
+        fun getService(): BackgroundPlaybackService = this@BackgroundPlaybackService
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        val playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
-        player = Player(this, playerConfig)
+        setPlayer(this)
 
         // Create a PlayerNotificationManager with the static create method
         // By passing null for the mediaDescriptionAdapter, a DefaultMediaDescriptionAdapter will be used internally.
@@ -86,32 +105,36 @@ class BackgroundPlaybackService : Service() {
             })
 
             // Attaching the Player to the PlayerNotificationManager
-            setPlayer(player)
+            setPlayer(sharedPlayer)
         }
     }
 
     override fun onDestroy() {
         playerNotificationManager.setPlayer(null)
-        player?.destroy()
-        player = null
+        releasePlayer()
 
-//        stopSelf()
+        stopSelf()
+
+        isRunning = false
 
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent): IBinder {
         bound++
-        return binder
+        return BackgroundBinder()
     }
 
     override fun onUnbind(intent: Intent): Boolean {
         bound--
-//        if (bound == 0 && player?.isPlaying == false) {
-//            stopSelf()
-//        }
+        if (bound == 0 && player?.isPlaying == false) {
+            stopSelf()
+        }
         return super.onUnbind(intent)
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int) = START_STICKY
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isRunning = true
+        return START_STICKY
+    }
 }
