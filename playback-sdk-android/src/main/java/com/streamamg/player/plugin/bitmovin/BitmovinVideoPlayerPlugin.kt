@@ -30,6 +30,8 @@ import androidx.lifecycle.LifecycleOwner
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
+import com.bitmovin.player.api.event.Event
+import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.api.ui.FullscreenHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -101,25 +103,25 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                         override fun onStart(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 if (playerConfig.playbackConfig.autoplayEnabled) {
-                                    playerView?.player?.play()
+                                    playerBind?.play()
                                 }
                             }
                         }
                         override fun onResume(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 if (playerConfig.playbackConfig.autoplayEnabled) {
-                                    playerView?.player?.play()
+                                    playerBind?.play()
                                 }
                             }
                         }
                         override fun onPause(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                playerView?.player?.pause()
+                                playerBind?.pause()
                             }
                         }
                         override fun onStop(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                playerView?.player?.pause()
+                                playerBind?.pause()
                             }
                         }
                         override fun onDestroy(owner: LifecycleOwner) {
@@ -146,7 +148,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     if (lastHlsUrl.value != hlsUrl) {
                         observers.firstOrNull()?.onStop(currentLifecycle)
                         observers.firstOrNull()?.onDestroy(currentLifecycle)
-                        view.player?.pause()
                         lastHlsUrl.value = hlsUrl
                     }
                 }
@@ -242,10 +243,9 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
             if (playerView == null) {
                 playerView = PlayerView(binder.getService(), playerBind)
-                playerView?.player = playerBind
-            } else {
-                playerView?.player = playerBind
             }
+
+            playerView?.player = playerBind
 
             initializePlayer(this@BitmovinVideoPlayerPlugin.hlsUrl)
         }
@@ -279,10 +279,17 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         playerView?.setFullscreenHandler(fullscreenHandler)
         playerView?.keepScreenOn = true
 
-        playerBind?.load(SourceConfig.fromUrl(hlsUrl))
+        playerBind?.next(PlayerEvent.Ready::class.java, this::checkEvent)
+//        playerBind?.next(SourceEvent.Loaded::class.java, this::checkEvent)
 
-        if (playerConfig.playbackConfig.autoplayEnabled) {
-            playerBind?.play()
+        playerBind?.load(SourceConfig.fromUrl(hlsUrl))
+    }
+
+    private fun checkEvent(event: Event) {
+        if (event is PlayerEvent.Ready) {
+            if (playerConfig.playbackConfig.autoplayEnabled) {
+                playerBind?.play()
+            }
         }
     }
 
@@ -293,14 +300,14 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     }
 
     override fun play() {
-        playerView?.player?.play()
+        playerBind?.play()
     }
 
     override fun pause() {
-        playerView?.player?.pause()
+        playerBind?.pause()
     }
 
     override fun removePlayer() {
-        playerView?.player?.destroy()
+        playerBind?.destroy()
     }
 }
