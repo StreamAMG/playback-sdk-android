@@ -10,6 +10,7 @@ import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.IBinder
+import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -149,6 +150,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                         observers.firstOrNull()?.onStop(currentLifecycle)
                         observers.firstOrNull()?.onDestroy(currentLifecycle)
                         lastHlsUrl.value = hlsUrl
+
+                        if (view.parent != null) {
+                            (view.parent as? ViewGroup)?.removeView(view)
+                            playerView?.setFullscreenHandler(null)
+                        }
                     }
                 }
             )
@@ -255,30 +261,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     }
 
     private fun initializePlayer(hlsUrl: String) {
-        val fullscreenHandler = object : FullscreenHandler {
-            override fun onFullscreenRequested() {
-                fullscreen.value = true
-            }
-
-            override fun onPause() {
-            }
-
-            override fun onResume() {
-            }
-
-            override val isFullscreen: Boolean
-                get() = fullscreen.value
-
-            override fun onDestroy() {
-            }
-
-            override fun onFullscreenExitRequested() {
-                fullscreen.value = false
-            }
-        }
-        playerView?.setFullscreenHandler(fullscreenHandler)
-        playerView?.keepScreenOn = true
-
         playerBind?.next(PlayerEvent.Ready::class.java, this::checkEvent)
 //        playerBind?.next(SourceEvent.Loaded::class.java, this::checkEvent)
 
@@ -287,6 +269,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     private fun checkEvent(event: Event) {
         if (event is PlayerEvent.Ready) {
+            playerView?.setFullscreenHandler(fullscreenHandler)
+            playerView?.keepScreenOn = true
             if (playerConfig.playbackConfig.autoplayEnabled) {
                 playerBind?.play()
             }
@@ -309,5 +293,27 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     override fun removePlayer() {
         playerBind?.destroy()
+    }
+
+    private val fullscreenHandler = object : FullscreenHandler {
+        override fun onFullscreenRequested() {
+            fullscreen.value = true
+        }
+
+        override fun onPause() {
+        }
+
+        override fun onResume() {
+        }
+
+        override val isFullscreen: Boolean
+            get() = fullscreen.value
+
+        override fun onDestroy() {
+        }
+
+        override fun onFullscreenExitRequested() {
+            fullscreen.value = false
+        }
     }
 }
