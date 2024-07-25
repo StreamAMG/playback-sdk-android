@@ -32,7 +32,7 @@ interface VideoPlayerPlugin {
     /**
      * Performs setup operations for the video player plugin.
      */
-    fun setup()
+    fun setup(config: VideoPlayerConfig)
 
     /**
      * Renders the player view for the video player plugin.
