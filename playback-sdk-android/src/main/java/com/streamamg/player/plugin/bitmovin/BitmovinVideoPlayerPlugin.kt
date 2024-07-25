@@ -10,6 +10,7 @@ import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.IBinder
+import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -140,6 +141,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     // Add new observer
                     currentLifecycle.lifecycle.addObserver(observer)
                     observers.add(observer)
+
+                    // This is a workaround to avoid the crash when switching between videos
+                    if (playerView?.parent != null) {
+                        (playerView?.parent as? ViewGroup)?.removeView(playerView)
+                    }
 
                     playerView!! // Directly return the PlayerView
                 },
