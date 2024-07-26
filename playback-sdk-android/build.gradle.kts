@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.streamamg"
-version = "1.0.0"
+version = "1.0.2"
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
@@ -162,4 +162,5 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.bitmovin.player:player:3.61.0")
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 }

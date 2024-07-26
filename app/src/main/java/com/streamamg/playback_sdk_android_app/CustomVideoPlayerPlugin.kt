@@ -10,22 +10,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.streamamg.player.plugin.VideoPlayerPlugin
+import com.streamamg.player.plugin.VideoPlayerConfig
 
 class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     private var mediaPlayer: MediaPlayer? = null
+    private var playerConfig = VideoPlayerConfig()
 
     override val name: String
         get() = "Native Media Player Plugin"
     override val version: String
         get() = "1.0"
 
-    override fun setup() {
-        mediaPlayer = MediaPlayer()
+    override fun setup(config: VideoPlayerConfig) {
+        playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
+        playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
     }
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
-        setup()
+        mediaPlayer = MediaPlayer()
+
         val textureView = rememberTextureView()
 
         mediaPlayer?.apply {
@@ -34,7 +38,9 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
                 // When MediaPlayer is prepared, set the surface texture
                 textureView.surfaceTexture?.let {
                     mp.setSurface(Surface(it))
-                    mp.start()
+                    if (playerConfig.playbackConfig.autoplayEnabled) {
+                        mp.start()
+                    }
                 }
             }
             prepareAsync()
