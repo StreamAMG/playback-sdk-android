@@ -225,11 +225,16 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     private fun bindAndStartBackgroundService(context: Context) {
         val intent = Intent(context, BackgroundPlaybackService::class.java)
-        if (BackgroundPlaybackService.isRunning) {
-            context.stopService(intent)
+
+        try {
+            if (BackgroundPlaybackService.isRunning) {
+                context.stopService(intent)
+            }
+            context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
+            context.startService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
-        context.startService(intent)
     }
 
     private fun unbindAndStopBackgroundService(context: Context) {
@@ -237,9 +242,13 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
         val intent = Intent(context, BackgroundPlaybackService::class.java)
 
-        context.unbindService(mConnection)
-        context.stopService(intent)
-        isServiceBound = false
+        try {
+            context.unbindService(mConnection)
+            context.stopService(intent)
+            isServiceBound = false
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
