@@ -91,7 +91,7 @@ android {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
@@ -163,4 +163,6 @@ dependencies {
     implementation("com.bitmovin.player:player:3.61.0")
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC")
 }

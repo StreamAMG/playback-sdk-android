@@ -53,6 +53,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
+    private var isServiceBound = false
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
@@ -72,7 +73,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 RequestMissingPermissions()
             } else {
                 // Bind and start the Background service without permissions
-                backgroundService(true, LocalContext.current)
+                bindAndStartBackgroundService(LocalContext.current)
             }
         }
 
@@ -127,8 +128,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                         }
                         override fun onDestroy(owner: LifecycleOwner) {
                             if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                // Stop and unbind the Background service
-                                backgroundService(false, context)
+                                unbindAndStopBackgroundService(context)
                             }
                         }
                     }
@@ -210,7 +210,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         val context = LocalContext.current
         val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) { granted ->
             if (granted) {
-                backgroundService(true, context)
+                bindAndStartBackgroundService(context)
             }
         }
         if (!permissionState.status.isGranted) {
@@ -219,22 +219,35 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 block = { permissionState.launchPermissionRequest() }
             )
         } else {
-            // Bind and start the Background service
-            backgroundService(true, context)
+            bindAndStartBackgroundService(context)
         }
     }
 
-    private fun backgroundService(start: Boolean, context: Context) {
+    private fun bindAndStartBackgroundService(context: Context) {
         val intent = Intent(context, BackgroundPlaybackService::class.java)
-        if (start) {
+
+        try {
             if (BackgroundPlaybackService.isRunning) {
                 context.stopService(intent)
             }
             context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
             context.startService(intent)
-        } else {
-            context.stopService(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun unbindAndStopBackgroundService(context: Context) {
+        if (!isServiceBound) return
+
+        val intent = Intent(context, BackgroundPlaybackService::class.java)
+
+        try {
             context.unbindService(mConnection)
+            context.stopService(intent)
+            isServiceBound = false
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -242,6 +255,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
      * Defines callbacks for service binding, passed to bindService()
      */
     private val mConnection = object : ServiceConnection {
+
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             // We've bound to the Service, cast the IBinder and get the Player instance
             val binder = service as BackgroundPlaybackService.BackgroundBinder
@@ -254,9 +268,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             playerView?.player = playerBind
 
             initializePlayer(this@BitmovinVideoPlayerPlugin.hlsUrl)
+            isServiceBound = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
+            isServiceBound = false
         }
     }
 
