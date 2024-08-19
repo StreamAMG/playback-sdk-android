@@ -247,9 +247,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     }
 
     private fun unbindAndStopBackgroundService(context: Context) {
-        if (!isServiceBound) {
-            return
-        }
+        if (!isServiceBound) return
 
         val intent = Intent(context, BackgroundPlaybackService::class.java)
 
