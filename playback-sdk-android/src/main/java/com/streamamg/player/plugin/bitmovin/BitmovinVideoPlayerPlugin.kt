@@ -2,6 +2,7 @@ package com.streamamg.player.plugin.bitmovin
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
@@ -82,17 +83,12 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-
                     if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                         // Init the Player without the Background service
-                        if (playerBind == null) {
-                            val playerConfig =
-                                PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
-                            playerBind = Player(context, playerConfig)
-                        }
-                        if (playerView == null) {
-                            playerView = PlayerView(context, playerBind)
-                        }
+                        val playerConfig =
+                            PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
+                        playerBind = Player(context, playerConfig)
+                        playerView = PlayerView(context, playerBind)
                         initializePlayer(lastHlsUrl.value)
                     } else {
                         // Init the Player with the Background service later in the BackgroundPlaybackService
@@ -223,11 +219,24 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         }
     }
 
+    fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val services: List<ActivityManager.RunningServiceInfo> = activityManager.getRunningServices(Int.MAX_VALUE)
+
+        for (runningServiceInfo in services) {
+            if (runningServiceInfo.service.getClassName().equals(serviceClass.name)) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun bindAndStartBackgroundService(context: Context) {
         val intent = Intent(context, BackgroundPlaybackService::class.java)
 
         try {
-            if (BackgroundPlaybackService.isRunning) {
+            if (isServiceRunning(context, BackgroundPlaybackService::class.java)) {
+                context.unbindService(mConnection)
                 context.stopService(intent)
             }
             context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
