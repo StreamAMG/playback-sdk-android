@@ -132,7 +132,7 @@
                               {
                                 "inlineContent": [
                                   {
-                                    "text": "Make sure this step is done before proceed to the next steps",
+                                    "text": "Ensure that the plugin setup and registration occur during the app's initialization process.",
                                     "type": "text"
                                   }
                                 ],
@@ -163,7 +163,7 @@
                       },
                       {
                         "type": "text",
-                        "text": "Create an instance of the custom video player plugin and configure it by setting playback options such as autoplay and background playback. To do this, create a `VideoPlayerConfig` object, configure its playback settings to enable autoplay and disable background playback, and then pass this configuration to the plugin."
+                        "text": "Create an instance of the custom video player plugin and configure it by setting playback options such as autoplay and background playback. To do this, create a `VideoPlayerConfig` object, update its autoplay and background playback settings, and then pass this configuration object to the plugin."
                       },
                       {
                         "type": "text",
