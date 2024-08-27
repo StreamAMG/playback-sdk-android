@@ -163,7 +163,7 @@
                       },
                       {
                         "type": "text",
-                        "text": " Initialize the Playback SDK by providing your API key and register the default player plugin."
+                        "text": "Create an instance of the custom video player plugin and configure it by setting playback options such as autoplay and background playback. To do this, create a `VideoPlayerConfig` object, configure its playback settings to enable autoplay and disable background playback, and then pass this configuration to the plugin."
                       },
                       {
                         "type": "text",
@@ -172,7 +172,7 @@
                       {
                         "inlineContent": [
                           {
-                            "text": "Make sure this step is done when the app starts.",
+                            "text": "Ensure that the plugin setup and registration occur during the app's initialization process.",
                             "type": "text"
                           }
                         ],
