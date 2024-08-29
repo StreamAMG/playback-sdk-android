@@ -641,12 +641,11 @@
             "        super.onCreate(savedInstanceState)",
             "",
             "        val apiKey = \"API_KEY\"",
-            "        val customUserAgent = \"okhttp/${okhttp3.OkHttp.VERSION}\"",
             "",
             "        PlaybackSDKManager.updateCastContext(this)",
             "",
             "        // Initialize SDK with the settings",
-            "        PlaybackSDKManager.initialize(apiKey, userAgent = userAgentHeader) { license, error ->",
+            "        PlaybackSDKManager.initialize(apiKey) { license, error ->",
             "",
             "            error?.let {",
             "                Log.e(this::class.simpleName, it.toString())",
@@ -690,22 +689,22 @@
           "fileName": "PlayBackDemoAppWithUserAgent.kt",
           "highlights": [
               {
-                  "line": 36
+                  "line": 17
               },
               {
-                  "line": 37
+                  "line": 18
               },
               {
-                  "line": 40
+                  "line": 22
               },
               {
-                  "line": 41
+                  "line": 23
               },
               {
-                  "line": 42
+                  "line": 24
               },
               {
-                  "line": 43
+                  "line": 25
               }
           ],
           "identifier": "PlayBackDemoAppWithUserAgent.kt",
@@ -727,12 +726,16 @@
             "        super.onCreate(savedInstanceState)",
             "",
             "        val apiKey = \"API_KEY\"",
+            "        // Should match the user agent of the HTTP client used in the app",
             "        val customUserAgent = \"okhttp/${okhttp3.OkHttp.VERSION}\"",
             "",
             "        PlaybackSDKManager.updateCastContext(this)",
             "",
             "        // Initialize SDK with the settings",
-            "        PlaybackSDKManager.initialize(apiKey, userAgent = userAgentHeader) { license, error ->",
+            "        PlaybackSDKManager.initialize(",
+            "             apiKey = apiKey,",
+            "             userAgent = userAgentHeader",
+            "        ) { license, error ->",
             "",
             "            error?.let {",
             "                Log.e(this::class.simpleName, it.toString())",
