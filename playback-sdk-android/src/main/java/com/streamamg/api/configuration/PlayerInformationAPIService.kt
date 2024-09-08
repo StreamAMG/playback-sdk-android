@@ -17,6 +17,7 @@ internal class PlayerInformationAPIService(private val apiKey: String) : PlayerI
 
     private val baseURL = "https://api.playback.streamamg.com/v1"
     private val json = Json { ignoreUnknownKeys = true }
+
     override suspend fun getPlayerInformation(userAgent: String?): Flow<PlayerInformationResponseModel> {
         return flow {
             try {
