@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.streamamg.PlaybackAPIError
 import com.streamamg.PlaybackSDKManager
+import com.streamamg.data.AnalyticsData
 import com.streamamg.player.plugin.VideoPlayerPluginManager
 
 object PlaybackUIView {
@@ -56,7 +57,8 @@ object PlaybackUIView {
             } else {
                 videoURL?.let { url ->
                     VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
-                        plugin.PlayerView(url, entryId, videoTitle ?: "", viewerId)
+                        val analyticsData = AnalyticsData(videoTitle ?: "", entryId, viewerId)
+                        plugin.PlayerView(url, analyticsData)
                     }
                 } ?: run {
                     // TODO: Handle null video URL (Error UI View)

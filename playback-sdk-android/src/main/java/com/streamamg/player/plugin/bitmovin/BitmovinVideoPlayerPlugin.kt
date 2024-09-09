@@ -40,6 +40,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.streamamg.PlaybackSDKManager
+import com.streamamg.data.AnalyticsData
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
 import com.streamamg.player.plugin.analytics.MuxAnalyticsManager
@@ -56,6 +57,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
     private var isServiceBound = false
+    private var mAnalyticsData: AnalyticsData? = null
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
@@ -66,10 +68,9 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     @Composable
     override fun PlayerView(
         hlsUrl: String,
-        videoId: String?,
-        videoTitle: String,
-        viewerId: String?
+        analyticsData: AnalyticsData
     ): Unit {
+        this.mAnalyticsData = analyticsData
         this.hlsUrl = hlsUrl
         val currentLifecycle = LocalLifecycleOwner.current
         val observers = remember { mutableListOf<DefaultLifecycleObserver>() }
@@ -97,6 +98,13 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                         playerBind = Player(context, playerConfig)
                         playerView = PlayerView(context, playerBind)
                         initializePlayer(lastHlsUrl.value)
+                        trackAnalytics(
+                            context,
+                            analyticsData.videoTitle,
+                            analyticsData.videoId,
+                            analyticsData.viewerId
+                        )
+
                     } else {
                         // Init the Player with the Background service later in the BackgroundPlaybackService
                         if (playerView == null) {
@@ -148,20 +156,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     // Add new observer
                     currentLifecycle.lifecycle.addObserver(observer)
                     observers.add(observer)
-
-                    if (videoId != null && viewerId != null) {
-                        PlaybackSDKManager.muxEnvKey?.let { envKey ->
-                            MuxAnalyticsManager.track(
-                                context,
-                                playerView!!,
-                                envKey,
-                                PlaybackSDKManager.muxPlayerName,
-                                videoTitle,
-                                videoId,
-                                viewerId
-                            )
-                        }
-                    }
                     playerView!! // Directly return the PlayerView
                 },
                 update = { view ->
@@ -186,6 +180,27 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         } else {
             LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT)
             SystemBars(true)
+        }
+    }
+
+    private fun trackAnalytics(
+        context: Context,
+        videoTitle: String,
+        videoId: String?,
+        viewerId: String?
+    ) {
+        if (videoId != null && viewerId != null) {
+            PlaybackSDKManager.muxEnvKey?.let { envKey ->
+                MuxAnalyticsManager.track(
+                    context,
+                    playerView!!,
+                    envKey,
+                    PlaybackSDKManager.muxPlayerName,
+                    videoTitle,
+                    videoId,
+                    viewerId
+                )
+            }
         }
     }
 
@@ -296,7 +311,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             // We've bound to the Service, cast the IBinder and get the Player instance
             val binder = service as BackgroundPlaybackService.BackgroundBinder
             playerBind = binder.player
-
+            // TODO: start analytics
+//            trackAnalytics(videoId, viewerId, context, videoTitle)
             if (playerView == null) {
                 playerView = PlayerView(binder.getService(), playerBind)
             }
@@ -305,6 +321,14 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
             initializePlayer(this@BitmovinVideoPlayerPlugin.hlsUrl)
             isServiceBound = true
+            mAnalyticsData?.let { data ->
+                trackAnalytics(
+                    binder.getService().baseContext,
+                    data.videoTitle,
+                    data.videoId,
+                    data.viewerId
+                )
+            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {

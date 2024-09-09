@@ -1,6 +1,7 @@
 package com.streamamg.player.plugin
 
 import androidx.compose.runtime.Composable
+import com.streamamg.data.AnalyticsData
 
 /**
  * Interface defining the contract for a video player plugin.
@@ -39,7 +40,7 @@ interface VideoPlayerPlugin {
      * @param hlsUrl The HLS URL of the video to be played.
      */
     @Composable
-    fun PlayerView(hlsUrl: String, videoId: String?, videoTitle: String, viewerId: String?)
+    fun PlayerView(hlsUrl: String, analyticsData: AnalyticsData)
 
     /**
      * Starts playback of the video.
