@@ -311,8 +311,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             // We've bound to the Service, cast the IBinder and get the Player instance
             val binder = service as BackgroundPlaybackService.BackgroundBinder
             playerBind = binder.player
-            // TODO: start analytics
-//            trackAnalytics(videoId, viewerId, context, videoTitle)
             if (playerView == null) {
                 playerView = PlayerView(binder.getService(), playerBind)
             }
