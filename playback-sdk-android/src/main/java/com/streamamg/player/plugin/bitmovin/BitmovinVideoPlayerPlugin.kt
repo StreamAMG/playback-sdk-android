@@ -189,7 +189,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         videoId: String?,
         viewerId: String?
     ) {
-        if (playerView == null || playerView?.player == null) return
+        if (playerView?.player == null) return
 
         if (videoId != null && viewerId != null) {
             PlaybackSDKManager.muxEnvKey?.let { envKey ->
