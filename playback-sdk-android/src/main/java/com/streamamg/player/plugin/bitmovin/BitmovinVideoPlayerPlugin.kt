@@ -40,8 +40,10 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.streamamg.PlaybackSDKManager
+import com.streamamg.data.AnalyticsData
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
+import com.streamamg.player.plugin.analytics.MuxAnalyticsManager
 import com.streamamg.player.ui.BackgroundPlaybackService
 
 
@@ -55,14 +57,20 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
     private var isServiceBound = false
+    private var mAnalyticsData: AnalyticsData? = null
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
-        playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
+        playerConfig.playbackConfig.backgroundPlaybackEnabled =
+            config.playbackConfig.backgroundPlaybackEnabled
     }
 
     @Composable
-    override fun PlayerView(hlsUrl: String): Unit {
+    override fun PlayerView(
+        hlsUrl: String,
+        analyticsData: AnalyticsData
+    ): Unit {
+        this.mAnalyticsData = analyticsData
         this.hlsUrl = hlsUrl
         val currentLifecycle = LocalLifecycleOwner.current
         val observers = remember { mutableListOf<DefaultLifecycleObserver>() }
@@ -90,6 +98,13 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                         playerBind = Player(context, playerConfig)
                         playerView = PlayerView(context, playerBind)
                         initializePlayer(lastHlsUrl.value)
+                        trackAnalytics(
+                            context,
+                            analyticsData.videoTitle,
+                            analyticsData.videoId,
+                            analyticsData.viewerId
+                        )
+
                     } else {
                         // Init the Player with the Background service later in the BackgroundPlaybackService
                         if (playerView == null) {
@@ -105,6 +120,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                                 }
                             }
                         }
+
                         override fun onResume(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 if (playerConfig.playbackConfig.autoplayEnabled) {
@@ -112,16 +128,19 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                                 }
                             }
                         }
+
                         override fun onPause(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 playerBind?.pause()
                             }
                         }
+
                         override fun onStop(owner: LifecycleOwner) {
                             if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 playerBind?.pause()
                             }
                         }
+
                         override fun onDestroy(owner: LifecycleOwner) {
                             if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
                                 unbindAndStopBackgroundService(context)
@@ -137,7 +156,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     // Add new observer
                     currentLifecycle.lifecycle.addObserver(observer)
                     observers.add(observer)
-
                     playerView!! // Directly return the PlayerView
                 },
                 update = { view ->
@@ -162,6 +180,29 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         } else {
             LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT)
             SystemBars(true)
+        }
+    }
+
+    private fun trackAnalytics(
+        context: Context,
+        videoTitle: String,
+        videoId: String?,
+        viewerId: String?
+    ) {
+        if (playerView?.player == null) return
+
+        if (videoId != null && viewerId != null) {
+            PlaybackSDKManager.muxEnvKey?.let { envKey ->
+                MuxAnalyticsManager.track(
+                    context,
+                    playerView!!,
+                    envKey,
+                    PlaybackSDKManager.muxPlayerName,
+                    videoTitle,
+                    videoId,
+                    viewerId
+                )
+            }
         }
     }
 
@@ -194,7 +235,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             } else {
                 hide(WindowInsetsCompat.Type.statusBars())
                 hide(WindowInsetsCompat.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }
     }
@@ -204,11 +246,12 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     @Composable
     private fun RequestMissingPermissions() {
         val context = LocalContext.current
-        val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) { granted ->
-            if (granted) {
-                bindAndStartBackgroundService(context)
+        val permissionState =
+            rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) { granted ->
+                if (granted) {
+                    bindAndStartBackgroundService(context)
+                }
             }
-        }
         if (!permissionState.status.isGranted) {
             LaunchedEffect(
                 key1 = Unit,
@@ -221,7 +264,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val services: List<ActivityManager.RunningServiceInfo> = activityManager.getRunningServices(Int.MAX_VALUE)
+        val services: List<ActivityManager.RunningServiceInfo> =
+            activityManager.getRunningServices(Int.MAX_VALUE)
 
         for (runningServiceInfo in services) {
             if (runningServiceInfo.service.getClassName().equals(serviceClass.name)) {
@@ -269,7 +313,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             // We've bound to the Service, cast the IBinder and get the Player instance
             val binder = service as BackgroundPlaybackService.BackgroundBinder
             playerBind = binder.player
-
             if (playerView == null) {
                 playerView = PlayerView(binder.getService(), playerBind)
             }
@@ -278,6 +321,14 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
             initializePlayer(this@BitmovinVideoPlayerPlugin.hlsUrl)
             isServiceBound = true
+            mAnalyticsData?.let { data ->
+                trackAnalytics(
+                    binder.getService().baseContext,
+                    data.videoTitle,
+                    data.videoId,
+                    data.viewerId
+                )
+            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -318,6 +369,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     override fun removePlayer() {
         playerBind?.destroy()
+        MuxAnalyticsManager.release()
     }
 
     private val fullscreenHandler = object : FullscreenHandler {
@@ -335,6 +387,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             get() = fullscreen.value
 
         override fun onDestroy() {
+            MuxAnalyticsManager.release()
         }
 
         override fun onFullscreenExitRequested() {

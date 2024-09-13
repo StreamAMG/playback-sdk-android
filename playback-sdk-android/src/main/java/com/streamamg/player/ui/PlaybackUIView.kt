@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.streamamg.PlaybackAPIError
 import com.streamamg.PlaybackSDKManager
+import com.streamamg.data.AnalyticsData
 import com.streamamg.player.plugin.VideoPlayerPluginManager
 
 object PlaybackUIView {
@@ -22,20 +23,23 @@ object PlaybackUIView {
     fun PlaybackUIView(
         authorizationToken: String?,
         entryId: String,
+        viewerId: String?,
         userAgent: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         var hasFetchedVideoDetails by remember { mutableStateOf(false) }
         var videoURL: String? by remember { mutableStateOf(null) }
+        var videoTitle: String? by remember { mutableStateOf(null) }
 
         LaunchedEffect(entryId) {
-            PlaybackSDKManager.loadHLSStream(entryId, authorizationToken, userAgent) { hlsURL, error ->
+            PlaybackSDKManager.loadHLSStream(entryId, authorizationToken, userAgent) { hlsURL, title, error ->
                 if (error != null) {
                     // Handle error
                     onError?.invoke(error)
                 } else {
                     // Update video URL
                     videoURL = hlsURL?.toString()
+                    videoTitle = title
                     hasFetchedVideoDetails = true
                 }
             }
@@ -53,7 +57,8 @@ object PlaybackUIView {
             } else {
                 videoURL?.let { url ->
                     VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
-                        plugin.PlayerView(url)
+                        val analyticsData = AnalyticsData(videoTitle ?: "", entryId, viewerId)
+                        plugin.PlayerView(url, analyticsData)
                     }
                 } ?: run {
                     // TODO: Handle null video URL (Error UI View)

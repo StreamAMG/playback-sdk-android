@@ -43,6 +43,8 @@ object PlaybackSDKManager {
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
+    internal var muxEnvKey: String? = null
+    internal var muxPlayerName: String = ""
     private var userAgent: String? = null
 
     val playbackSdkVersion = BuildConfig.SDK_VERSION
@@ -93,18 +95,21 @@ object PlaybackSDKManager {
     /**
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
+     * @param viewerId From CloudPay (CustomerID)
      * @param authorizationToken The authorization token.
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
+        viewerId: String?,
         authorizationToken: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
+            viewerId = viewerId,
             userAgent = this.userAgent,
             onError = onError
         )
@@ -139,6 +144,11 @@ object PlaybackSDKManager {
                     return@launch
                 }
 
+                val muxKey = playerInfo.player.bitmovin.integrations?.mux?.envKey
+                val muxPlayer = playerInfo.player.bitmovin.integrations?.mux?.playerName
+                this@PlaybackSDKManager.muxEnvKey = muxKey
+                this@PlaybackSDKManager.muxPlayerName = muxPlayer ?: ""
+
                 completion(bitmovinLicense, null)
             } catch (e: Throwable) {
                 Log.e("PlaybackSDKManager", "Error fetching Bitmovin license: $e")
@@ -161,15 +171,15 @@ object PlaybackSDKManager {
         entryId: String,
         authorizationToken: String?,
         userAgent: String?,
-        completion: (URL?, PlaybackAPIError?) -> Unit
+        completion: (URL?, String?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
             playBackAPI.getVideoDetails(entryId, authorizationToken, userAgent)
                 .catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
-                        is PlaybackAPIError -> completion(null, e)
-                        else -> completion(null, PlaybackAPIError.NetworkError(e))
+                        is PlaybackAPIError -> completion(null, null, e)
+                        else -> completion(null, null, PlaybackAPIError.NetworkError(e))
                     }
                 }
                 .collect { videoDetails ->
@@ -177,10 +187,10 @@ object PlaybackSDKManager {
                     val hlsURLString = videoDetails.media?.hls
                     if (!hlsURLString.isNullOrEmpty()) {
                         val hlsURL = URL(hlsURLString)
-                        completion(hlsURL, null)
+                        completion(hlsURL, videoDetails?.name, null)
                     } else {
                         // No HLS URL found in the response
-                        completion(null, PlaybackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
+                        completion(null, null, PlaybackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
                     }
                 }
         }

@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             Text(text = "test")
 
                             // Load the player
-                            loadPlayer(entryId, authorizationToken) { error ->
+                            loadPlayer(entryId, null, authorizationToken) { error ->
                                 // Handle errors here
                                 Log.e("PlaybackSDK", "Error occurred: $error")
                             }

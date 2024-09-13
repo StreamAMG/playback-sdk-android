@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import com.streamamg.data.AnalyticsData
 import com.streamamg.player.plugin.VideoPlayerPlugin
 import com.streamamg.player.plugin.VideoPlayerConfig
 
@@ -27,7 +28,10 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     }
 
     @Composable
-    override fun PlayerView(hlsUrl: String): Unit {
+    override fun PlayerView(
+        hlsUrl: String,
+        analyticsData: AnalyticsData
+    ) {
         mediaPlayer = MediaPlayer()
 
         val textureView = rememberTextureView()
