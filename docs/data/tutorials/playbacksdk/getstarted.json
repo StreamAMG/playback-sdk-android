@@ -293,7 +293,7 @@
                       },
                       {
                         "type": "text",
-                        "text": " function provided by the Playback SDK to initialize and load the video player. The function takes the entry ID and authorization token as parameters. Additionally, it includes a closure to handle any potential playback errors that may occur during the loading process."
+                        "text": " function provided by the Playback SDK to initialize and load the video player. The function takes three parameters: the entry ID, viewer ID, and authorization token. The viewer ID is the unique ID from CloudPay (CustomerID). It will not be present for free videos, as there is no session for those users. If the viewer ID is null, analytics tracking will be disabled. Additionally, it includes a closure to handle any potential playback errors that may occur during the loading process."
                       },
                       {
                         "type": "text",
@@ -474,6 +474,14 @@
     "references": {
       "PlayerTestView.kt": {
         "identifier": "PlayerTestView.kt",
+        "highlights": [
+          {
+            "line": 84
+          },
+          {
+            "line": 86
+          }
+        ],
         "content": [
             "// Others imports",
             "import com.streamamg.PlaybackAPIError",
@@ -561,7 +569,9 @@
             "                        .aspectRatio(16f / 9f)",
             "                        .align(Alignment.TopCenter)",
             "                ) {",
-            "                    PlaybackSDKManager.loadPlayer(entryId, authorizationToken) { error ->",
+            "                    val viewerId = \"viewer id\"",
+            " ",
+            "                    PlaybackSDKManager.loadPlayer(entryId, viewerId, authorizationToken) { error ->",
             "                        Log.e(\"PlayerActivity\", error.message.toString())",
             "                        when (error) {",
             "                            is PlaybackAPIError.ApiError -> {",
@@ -600,7 +610,6 @@
         ],
         "syntax": "swift",
         "fileType": "kotlin",
-        "highlights": [],
         "fileName": "PlayerTestView.kt",
         "type": "file"
       },
