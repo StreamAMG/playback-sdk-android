@@ -54,10 +54,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
-        changedSource = !urlsAreEqualExcludingKs(this.hlsUrl, hlsUrl)
-        if (changedSource) {
-            playerBind = null
-        }
         val playerViewModel: VideoPlayerViewModel = viewModel()
 
         this.hlsUrl = hlsUrl
@@ -80,9 +76,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         DisposableEffect(hlsUrl) {
             playerViewModel.initializePlayer(context, playerConfig, hlsUrl)
             playerBind = playerViewModel.player
-            if (changedSource) {
-                playerViewModel.loadVideo(hlsUrl)
-            }
             onDispose {
                 playerViewModel.handleAppInForeground(context)
             }
@@ -97,12 +90,12 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     Lifecycle.Event.ON_START -> {
                         playerViewModel.handleAppInForeground(context)
                     }
-                    Lifecycle.Event.ON_PAUSE -> {
-                        playerViewModel.handleAppInBackground(context)
-                    }
-                    Lifecycle.Event.ON_RESUME -> {
-                        playerViewModel.handleAppInForeground(context)
-                    }
+//                    Lifecycle.Event.ON_PAUSE -> {
+//                        playerViewModel.handleAppInBackground(context)
+//                    }
+//                    Lifecycle.Event.ON_RESUME -> {
+//                        playerViewModel.handleAppInForeground(context)
+//                    }
                     else -> {}
                 }
             }
@@ -130,10 +123,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     if (isReady.value) {
                         Log.d("SDK", "-------- player View update")
                         view.player = playerViewModel.player
-                    }
-                    if (changedSource) {
-                        playerViewModel.loadVideo(hlsUrl)
-                        playerViewModel.playVideo()
                     }
                 }
             )
@@ -192,42 +181,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         } else {
            callback(true)
         }
-    }
-
-    private fun urlsAreEqualExcludingKs(url1: String, url2: String): Boolean {
-        if (url1.isEmpty()) return false
-        if (url2.isEmpty()) return false
-        val normalizedUrl1 = normalizeUrl(url1)
-        val normalizedUrl2 = normalizeUrl(url2)
-        return normalizedUrl1 == normalizedUrl2
-    }
-
-    private fun normalizeUrl(urlString: String): String {
-        val url = URL(urlString)
-        val protocol = url.protocol
-        val host = url.host
-        val port = url.port
-        val path = url.path
-
-        // Parse query parameters excluding 'ks' and sort them for consistent comparison
-        val queryParams = url.query?.split("&")?.mapNotNull {
-            val parts = it.split("=", limit = 2)
-            if (parts[0] != "ks") {
-                it
-            } else null
-        }?.sorted()?.joinToString("&") ?: ""
-
-        // Reconstruct the URL without the 'ks' parameter
-        val normalizedUrl = StringBuilder()
-        normalizedUrl.append(protocol).append("://").append(host)
-        if (port != -1) {
-            normalizedUrl.append(":").append(port)
-        }
-        normalizedUrl.append(path)
-        if (queryParams.isNotEmpty()) {
-            normalizedUrl.append("?").append(queryParams)
-        }
-        return normalizedUrl.toString()
     }
 
     private fun Context.findActivity(): Activity? = when (this) {

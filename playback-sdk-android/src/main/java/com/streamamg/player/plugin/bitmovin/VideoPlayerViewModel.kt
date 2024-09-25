@@ -16,6 +16,7 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.ui.BackgroundPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.net.URL
 
 class VideoPlayerViewModel : ViewModel() {
     var player: Player? = null
@@ -46,7 +47,7 @@ class VideoPlayerViewModel : ViewModel() {
         this.config = config
         backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         autoplayEnabled = config.playbackConfig.autoplayEnabled
-        if (player == null || videoUrl != currentVideoUrl) {
+        if (player == null) {
             // Initialize player if not already initialized
             val playerConfig =
                 PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
@@ -69,10 +70,11 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     fun loadVideo(videoUrl: String) {
+        if (!urlsAreEqualExcludingKs(currentVideoUrl ?: "", videoUrl)) {
+            val sourceConfig = SourceConfig.fromUrl(videoUrl)
+            player?.load(sourceConfig)
+        }
         currentVideoUrl = videoUrl
-        val sourceConfig = SourceConfig.fromUrl(videoUrl)
-        player?.pause()
-        player?.load(sourceConfig)
         player?.next(PlayerEvent.Ready::class.java) {
             _isPlayerReady.value = true
         }
@@ -126,5 +128,41 @@ class VideoPlayerViewModel : ViewModel() {
         super.onCleared()
         player?.destroy()
         player = null
+    }
+
+    private fun urlsAreEqualExcludingKs(url1: String, url2: String): Boolean {
+        if (url1.isEmpty()) return false
+        if (url2.isEmpty()) return false
+        val normalizedUrl1 = normalizeUrl(url1)
+        val normalizedUrl2 = normalizeUrl(url2)
+        return normalizedUrl1 == normalizedUrl2
+    }
+
+    private fun normalizeUrl(urlString: String): String {
+        val url = URL(urlString)
+        val protocol = url.protocol
+        val host = url.host
+        val port = url.port
+        val path = url.path
+
+        // Parse query parameters excluding 'ks' and sort them for consistent comparison
+        val queryParams = url.query?.split("&")?.mapNotNull {
+            val parts = it.split("=", limit = 2)
+            if (parts[0] != "ks") {
+                it
+            } else null
+        }?.sorted()?.joinToString("&") ?: ""
+
+        // Reconstruct the URL without the 'ks' parameter
+        val normalizedUrl = StringBuilder()
+        normalizedUrl.append(protocol).append("://").append(host)
+        if (port != -1) {
+            normalizedUrl.append(":").append(port)
+        }
+        normalizedUrl.append(path)
+        if (queryParams.isNotEmpty()) {
+            normalizedUrl.append("?").append(queryParams)
+        }
+        return normalizedUrl.toString()
     }
 }
