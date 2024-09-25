@@ -165,4 +165,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 }

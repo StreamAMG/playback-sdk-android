@@ -2,21 +2,17 @@ package com.streamamg.player.plugin.bitmovin
 
 import android.Manifest
 import android.app.Activity
-import android.app.ActivityManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.os.IBinder
-import android.view.ViewGroup
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,22 +23,18 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
-import com.bitmovin.player.api.PlayerConfig
-import com.bitmovin.player.api.event.Event
-import com.bitmovin.player.api.event.PlayerEvent
-import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.api.ui.FullscreenHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
-import com.streamamg.player.ui.BackgroundPlaybackService
+import java.net.URL
 
 
 class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
@@ -50,11 +42,10 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     override val version: String = "1.0"
 
     private var hlsUrl: String = ""
-    private var playerView: PlayerView? = null
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
-    private var isServiceBound = false
+    private var changedSource = false
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
@@ -63,94 +54,86 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
+        changedSource = !urlsAreEqualExcludingKs(this.hlsUrl, hlsUrl)
+        if (changedSource) {
+            playerBind = null
+        }
+        val playerViewModel: VideoPlayerViewModel = viewModel()
+
         this.hlsUrl = hlsUrl
+        val context = LocalContext.current
         val currentLifecycle = LocalLifecycleOwner.current
-        val observers = remember { mutableListOf<DefaultLifecycleObserver>() }
         val lastHlsUrl = remember { mutableStateOf(hlsUrl) }
 
         if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
                 // Managing new permissions for the Background service notifications
-                RequestMissingPermissions()
+                RequestMissingPermissions { granted ->
+                    playerViewModel.updatePermissionsState(granted, context)
+                }
             } else {
                 // Bind and start the Background service without permissions
-                bindAndStartBackgroundService(LocalContext.current)
+                playerViewModel.updatePermissionsState(true, context)
             }
         }
+
+        DisposableEffect(hlsUrl) {
+            playerViewModel.initializePlayer(context, playerConfig, hlsUrl)
+            playerBind = playerViewModel.player
+            if (changedSource) {
+                playerViewModel.loadVideo(hlsUrl)
+            }
+            onDispose {
+                playerViewModel.handleAppInForeground(context)
+            }
+        }
+
+        DisposableEffect(currentLifecycle) {
+            val observer = LifecycleEventObserver { _, event ->
+                when (event) {
+                    Lifecycle.Event.ON_STOP -> {
+                        playerViewModel.handleAppInBackground(context)
+                    }
+                    Lifecycle.Event.ON_START -> {
+                        playerViewModel.handleAppInForeground(context)
+                    }
+                    Lifecycle.Event.ON_PAUSE -> {
+                        playerViewModel.handleAppInBackground(context)
+                    }
+                    Lifecycle.Event.ON_RESUME -> {
+                        playerViewModel.handleAppInForeground(context)
+                    }
+                    else -> {}
+                }
+            }
+            currentLifecycle.lifecycle.addObserver(observer)
+            onDispose {
+                currentLifecycle.lifecycle.removeObserver(observer)
+            }
+        }
+
+        val isReady = playerViewModel.isPlayerReady.collectAsState()
 
         key(lastHlsUrl.value) {
             // Force recomposition when the HLS URL changes
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                        // Init the Player without the Background service
-                        val playerConfig =
-                            PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
-                        playerBind = Player(context, playerConfig)
-                        playerView = PlayerView(context, playerBind)
-                        initializePlayer(lastHlsUrl.value)
-                    } else {
-                        // Init the Player with the Background service later in the BackgroundPlaybackService
-                        if (playerView == null) {
-                            playerView = PlayerView(context, playerBind)
-                        }
+                    Log.d("SDK", "-------- player View created")
+                    PlayerView(context, playerViewModel.player).apply {
+                        setFullscreenHandler(fullscreenHandler)
+                        keepScreenOn = true
+                        player = playerViewModel.player
                     }
-
-                    val observer = object : DefaultLifecycleObserver {
-                        override fun onStart(owner: LifecycleOwner) {
-                            if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                if (playerConfig.playbackConfig.autoplayEnabled) {
-                                    playerBind?.play()
-                                }
-                            }
-                        }
-                        override fun onResume(owner: LifecycleOwner) {
-                            if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                if (playerConfig.playbackConfig.autoplayEnabled) {
-                                    playerBind?.play()
-                                }
-                            }
-                        }
-                        override fun onPause(owner: LifecycleOwner) {
-                            if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                playerBind?.pause()
-                            }
-                        }
-                        override fun onStop(owner: LifecycleOwner) {
-                            if (!playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                playerBind?.pause()
-                            }
-                        }
-                        override fun onDestroy(owner: LifecycleOwner) {
-                            if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
-                                unbindAndStopBackgroundService(context)
-                            }
-                        }
-                    }
-
-                    // Remove previous observer
-                    if (observers.isNotEmpty()) {
-                        observers.forEach { currentLifecycle.lifecycle.removeObserver(it) }
-                        observers.clear()
-                    }
-                    // Add new observer
-                    currentLifecycle.lifecycle.addObserver(observer)
-                    observers.add(observer)
-
-                    playerView!! // Directly return the PlayerView
                 },
                 update = { view ->
-                    // Update the PlayerView with the new HLS URL
-                    if (lastHlsUrl.value != hlsUrl) {
-                        observers.firstOrNull()?.onStop(currentLifecycle)
-                        observers.firstOrNull()?.onDestroy(currentLifecycle)
-                        lastHlsUrl.value = hlsUrl
-
-                        if (view.parent != null) {
-                            (view.parent as? ViewGroup)?.removeView(view)
-                            playerView?.setFullscreenHandler(null)
-                        }
+                    if (isReady.value) {
+                        Log.d("SDK", "-------- player View update")
+                        view.player = playerViewModel.player
+                    }
+                    if (changedSource) {
+                        playerViewModel.loadVideo(hlsUrl)
+                        playerViewModel.playVideo()
                     }
                 }
             )
@@ -170,18 +153,13 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         val context = LocalContext.current
         DisposableEffect(orientation) {
             val activity = context.findActivity() ?: return@DisposableEffect onDispose {}
-            val originalOrientation = activity.requestedOrientation
             activity.requestedOrientation = orientation
-            onDispose {
-                // restore original orientation when view disappears
-                activity.requestedOrientation = originalOrientation
-            }
+            onDispose {}
         }
     }
 
     @Composable
     fun SystemBars(show: Boolean) {
-
         val context = LocalContext.current
         val activity = context.findActivity() ?: return
         val window = activity.window
@@ -202,12 +180,9 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @OptIn(ExperimentalPermissionsApi::class)
     @Composable
-    private fun RequestMissingPermissions() {
-        val context = LocalContext.current
+    private fun RequestMissingPermissions(callback: ((Boolean) -> Unit)) {
         val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS) { granted ->
-            if (granted) {
-                bindAndStartBackgroundService(context)
-            }
+            callback(granted)
         }
         if (!permissionState.status.isGranted) {
             LaunchedEffect(
@@ -215,91 +190,44 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 block = { permissionState.launchPermissionRequest() }
             )
         } else {
-            bindAndStartBackgroundService(context)
+           callback(true)
         }
     }
 
-    fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val services: List<ActivityManager.RunningServiceInfo> = activityManager.getRunningServices(Int.MAX_VALUE)
-
-        for (runningServiceInfo in services) {
-            if (runningServiceInfo.service.getClassName().equals(serviceClass.name)) {
-                return true
-            }
-        }
-        return false
+    private fun urlsAreEqualExcludingKs(url1: String, url2: String): Boolean {
+        if (url1.isEmpty()) return false
+        if (url2.isEmpty()) return false
+        val normalizedUrl1 = normalizeUrl(url1)
+        val normalizedUrl2 = normalizeUrl(url2)
+        return normalizedUrl1 == normalizedUrl2
     }
 
-    private fun bindAndStartBackgroundService(context: Context) {
-        val intent = Intent(context, BackgroundPlaybackService::class.java)
+    private fun normalizeUrl(urlString: String): String {
+        val url = URL(urlString)
+        val protocol = url.protocol
+        val host = url.host
+        val port = url.port
+        val path = url.path
 
-        try {
-            if (isServiceRunning(context, BackgroundPlaybackService::class.java)) {
-                context.unbindService(mConnection)
-                context.stopService(intent)
-            }
-            context.bindService(intent, mConnection, Context.BIND_AUTO_CREATE)
-            context.startService(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        // Parse query parameters excluding 'ks' and sort them for consistent comparison
+        val queryParams = url.query?.split("&")?.mapNotNull {
+            val parts = it.split("=", limit = 2)
+            if (parts[0] != "ks") {
+                it
+            } else null
+        }?.sorted()?.joinToString("&") ?: ""
+
+        // Reconstruct the URL without the 'ks' parameter
+        val normalizedUrl = StringBuilder()
+        normalizedUrl.append(protocol).append("://").append(host)
+        if (port != -1) {
+            normalizedUrl.append(":").append(port)
         }
-    }
-
-    private fun unbindAndStopBackgroundService(context: Context) {
-        if (!isServiceBound) return
-
-        val intent = Intent(context, BackgroundPlaybackService::class.java)
-
-        try {
-            context.unbindService(mConnection)
-            context.stopService(intent)
-            isServiceBound = false
-        } catch (e: Exception) {
-            e.printStackTrace()
+        normalizedUrl.append(path)
+        if (queryParams.isNotEmpty()) {
+            normalizedUrl.append("?").append(queryParams)
         }
-    }
-
-    /**
-     * Defines callbacks for service binding, passed to bindService()
-     */
-    private val mConnection = object : ServiceConnection {
-
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            // We've bound to the Service, cast the IBinder and get the Player instance
-            val binder = service as BackgroundPlaybackService.BackgroundBinder
-            playerBind = binder.player
-
-            if (playerView == null) {
-                playerView = PlayerView(binder.getService(), playerBind)
-            }
-
-            playerView?.player = playerBind
-
-            initializePlayer(this@BitmovinVideoPlayerPlugin.hlsUrl)
-            isServiceBound = true
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            isServiceBound = false
-        }
-    }
-
-    private fun initializePlayer(hlsUrl: String) {
-        playerBind?.next(PlayerEvent.Ready::class.java, this::checkEvent)
-//        playerBind?.next(SourceEvent.Loaded::class.java, this::checkEvent)
-
-        playerBind?.load(SourceConfig.fromUrl(hlsUrl))
-    }
-
-    private fun checkEvent(event: Event) {
-        if (event is PlayerEvent.Ready) {
-            playerView?.setFullscreenHandler(fullscreenHandler)
-            playerView?.keepScreenOn = true
-            if (playerConfig.playbackConfig.autoplayEnabled) {
-                playerBind?.play()
-            }
-        }
+        return normalizedUrl.toString()
     }
 
     private fun Context.findActivity(): Activity? = when (this) {

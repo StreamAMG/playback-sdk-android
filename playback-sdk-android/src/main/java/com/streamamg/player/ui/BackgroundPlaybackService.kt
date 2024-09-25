@@ -35,6 +35,10 @@ class BackgroundPlaybackService : Service() {
             }
         }
 
+        fun setPlayer(player: Player) {
+            this.player = player
+        }
+
         fun releasePlayer() {
             player?.destroy()
             player = null
@@ -78,7 +82,7 @@ class BackgroundPlaybackService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        setPlayer(this)
+//        setPlayer(this)
 
         // Create a PlayerNotificationManager with the static create method
         // By passing null for the mediaDescriptionAdapter, a DefaultMediaDescriptionAdapter will be used internally.
@@ -105,7 +109,7 @@ class BackgroundPlaybackService : Service() {
             })
 
             // Attaching the Player to the PlayerNotificationManager
-            setPlayer(sharedPlayer)
+//            setPlayer(sharedPlayer)
         }
     }
 
@@ -136,5 +140,10 @@ class BackgroundPlaybackService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         isRunning = true
         return START_STICKY
+    }
+
+    fun setPlayer(playerBind: Player?) {
+        this.player = playerBind
+        playerNotificationManager.setPlayer(playerBind)
     }
 }
