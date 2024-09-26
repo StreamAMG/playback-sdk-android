@@ -34,7 +34,7 @@ class VideoPlayerViewModel : ViewModel() {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as BackgroundPlaybackService.BackgroundBinder
             val playbackService = binder.getService()
-            playbackService.setPlayer(player!!)  // Pass player to the service
+            playbackService.setPlayer(player!!)
             isServiceBound = true
         }
 
@@ -48,7 +48,6 @@ class VideoPlayerViewModel : ViewModel() {
         backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         autoplayEnabled = config.playbackConfig.autoplayEnabled
         if (player == null) {
-            // Initialize player if not already initialized
             val playerConfig =
                 PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
             player = Player(context, playerConfig)
@@ -88,7 +87,6 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     private fun bindToBackgroundPlaybackService(context: Context) {
-        // Bind to the background service
         if (_isPlayerReady.value && !isServiceBound) {
             val intent = Intent(context, BackgroundPlaybackService::class.java)
             context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)

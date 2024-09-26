@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -34,7 +33,6 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
-import java.net.URL
 
 
 class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
@@ -45,7 +43,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
-    private var changedSource = false
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
@@ -63,12 +60,10 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
         if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
-                // Managing new permissions for the Background service notifications
                 RequestMissingPermissions { granted ->
                     playerViewModel.updatePermissionsState(granted, context)
                 }
             } else {
-                // Bind and start the Background service without permissions
                 playerViewModel.updatePermissionsState(true, context)
             }
         }
@@ -90,12 +85,12 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     Lifecycle.Event.ON_START -> {
                         playerViewModel.handleAppInForeground(context)
                     }
-//                    Lifecycle.Event.ON_PAUSE -> {
-//                        playerViewModel.handleAppInBackground(context)
-//                    }
-//                    Lifecycle.Event.ON_RESUME -> {
-//                        playerViewModel.handleAppInForeground(context)
-//                    }
+                    Lifecycle.Event.ON_PAUSE -> {
+                        playerViewModel.handleAppInBackground(context)
+                    }
+                    Lifecycle.Event.ON_RESUME -> {
+                        playerViewModel.handleAppInForeground(context)
+                    }
                     else -> {}
                 }
             }
@@ -112,7 +107,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    Log.d("SDK", "-------- player View created")
                     PlayerView(context, playerViewModel.player).apply {
                         setFullscreenHandler(fullscreenHandler)
                         keepScreenOn = true
@@ -121,7 +115,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 },
                 update = { view ->
                     if (isReady.value) {
-                        Log.d("SDK", "-------- player View update")
                         view.player = playerViewModel.player
                     }
                 }
