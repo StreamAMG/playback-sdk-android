@@ -76,30 +76,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             }
         }
 
-        DisposableEffect(currentLifecycle) {
-            val observer = LifecycleEventObserver { _, event ->
-                when (event) {
-                    Lifecycle.Event.ON_STOP -> {
-                        playerViewModel.handleAppInBackground(context)
-                    }
-                    Lifecycle.Event.ON_START -> {
-                        playerViewModel.handleAppInForeground(context)
-                    }
-                    Lifecycle.Event.ON_PAUSE -> {
-                        playerViewModel.handleAppInBackground(context)
-                    }
-                    Lifecycle.Event.ON_RESUME -> {
-                        playerViewModel.handleAppInForeground(context)
-                    }
-                    else -> {}
-                }
-            }
-            currentLifecycle.lifecycle.addObserver(observer)
-            onDispose {
-                currentLifecycle.lifecycle.removeObserver(observer)
-            }
-        }
-
         val isReady = playerViewModel.isPlayerReady.collectAsState()
 
         key(lastHlsUrl.value) {
@@ -116,9 +92,34 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 update = { view ->
                     if (isReady.value) {
                         view.player = playerViewModel.player
+                        playerViewModel.updateBackgroundService(context)
                     }
                 }
             )
+
+            DisposableEffect(currentLifecycle) {
+                val observer = LifecycleEventObserver { _, event ->
+                    when (event) {
+                        Lifecycle.Event.ON_STOP -> {
+                            playerViewModel.handleAppInBackground(context)
+                        }
+                        Lifecycle.Event.ON_START -> {
+                            playerViewModel.handleAppInForeground(context)
+                        }
+                        Lifecycle.Event.ON_PAUSE -> {
+                            playerViewModel.handleAppInBackground(context)
+                        }
+                        Lifecycle.Event.ON_RESUME -> {
+                            playerViewModel.handleAppInForeground(context)
+                        }
+                        else -> {}
+                    }
+                }
+                currentLifecycle.lifecycle.addObserver(observer)
+                onDispose {
+                    currentLifecycle.lifecycle.removeObserver(observer)
+                }
+            }
         }
 
         if (fullscreen.value) {

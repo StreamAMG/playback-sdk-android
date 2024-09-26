@@ -57,7 +57,7 @@ class VideoPlayerViewModel : ViewModel() {
         updateBackgroundService(context)
     }
 
-    private fun updateBackgroundService(context: Context) {
+     fun updateBackgroundService(context: Context) {
         if (backgroundPlaybackEnabled && isPermissionsGranted) {
             bindToBackgroundPlaybackService(context)
         }
@@ -68,7 +68,7 @@ class VideoPlayerViewModel : ViewModel() {
         updateBackgroundService(context)
     }
 
-    fun loadVideo(videoUrl: String) {
+    private fun loadVideo(videoUrl: String) {
         if (!urlsAreEqualExcludingKs(currentVideoUrl ?: "", videoUrl)) {
             val sourceConfig = SourceConfig.fromUrl(videoUrl)
             player?.load(sourceConfig)
@@ -101,7 +101,7 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     fun handleAppInBackground(context: Context) {
-        if (backgroundPlaybackEnabled) {
+        if (backgroundPlaybackEnabled && _isPlayerReady.value) {
             bindToBackgroundPlaybackService(context)
         } else {
             player?.pause()
@@ -109,7 +109,7 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     fun handleAppInForeground(context: Context) {
-        if (backgroundPlaybackEnabled) {
+        if (backgroundPlaybackEnabled && _isPlayerReady.value) {
             unbindFromService(context)
         } else if (autoplayEnabled) {
             player?.play()
