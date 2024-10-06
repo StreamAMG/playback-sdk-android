@@ -60,8 +60,10 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
         val context = LocalContext.current
+        val isJetpackCompose = LocalViewModelStoreOwner.current != null
+
         val activity = context.findActivity() as? ComponentActivity
-        val playerViewModel: VideoPlayerViewModel = activity?.let {
+        val playerViewModel: VideoPlayerViewModel = if (isJetpackCompose) viewModel() else activity?.let {
             ViewModelProvider(it)[VideoPlayerViewModel::class.java]
         } ?: viewModel()
 
@@ -85,7 +87,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             playerViewModel.initializePlayer(context, playerConfig, hlsUrl)
             playerBind = playerViewModel.player
             onDispose {
-                playerViewModel.handleAppInForeground(context)
+                if (isJetpackCompose) {
+                    playerViewModel.unbindAndStopService(context)
+                } else {
+                    playerViewModel.handleAppInBackground(context)
+                }
             }
         }
 
@@ -96,6 +102,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
+                    Log.d("SDK", "New PlayerView factory called")
                     playerView = PlayerView(context, playerViewModel.player).apply {
                         keepScreenOn = true
                         player = playerViewModel.player
@@ -103,15 +110,16 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     playerView!!
                 },
                 update = { view ->
+                    Log.d("SDK", "View updated ${isReady.value}")
                     if (isReady.value) {
-                        playerView?.setFullscreenHandler(fullscreenHandler)
+                        Log.d("SDK", "Player ready")
                         view.player = playerViewModel.player
+                        playerView?.setFullscreenHandler(fullscreenHandler)
+                        playerView?.invalidate()
                         playerViewModel.updateBackgroundService(context)
                     }
                 }
             )
-
-            playerView?.setFullscreenHandler(fullscreenHandler)
 
             if (playerConfig.playbackConfig.fullscreenRotationEnabled)
                 DetectRotationAndFullscreen(playerView)

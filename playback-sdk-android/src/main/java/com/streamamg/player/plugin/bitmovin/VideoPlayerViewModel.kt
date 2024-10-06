@@ -105,6 +105,17 @@ class VideoPlayerViewModel : ViewModel() {
         } catch (_: IllegalArgumentException) {}
     }
 
+    fun unbindAndStopService(context: Context) {
+        val intent = Intent(context, BackgroundPlaybackService::class.java)
+        try {
+            if (isServiceBound) {
+                context.unbindService(serviceConnection)
+                isServiceBound = false
+            }
+            context.stopService(intent)
+        } catch (_: IllegalArgumentException) {}
+    }
+
     fun handleAppInBackground(context: Context) {
         if (backgroundPlaybackEnabled && _isPlayerReady.value) {
             bindToBackgroundPlaybackService(context)
@@ -124,6 +135,12 @@ class VideoPlayerViewModel : ViewModel() {
     fun playVideo() {
         if (isPlayerReady.value) {
             player?.play()
+        }
+    }
+
+    fun pauseVideo() {
+        if (isPlayerReady.value) {
+            player?.pause()
         }
     }
 
