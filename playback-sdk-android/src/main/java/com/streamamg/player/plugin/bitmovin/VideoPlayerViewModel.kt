@@ -16,6 +16,7 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.ui.BackgroundPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import java.net.MalformedURLException
 import java.net.URL
 
 class VideoPlayerViewModel : ViewModel() {
@@ -52,6 +53,8 @@ class VideoPlayerViewModel : ViewModel() {
                 PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
             player = Player(context, playerConfig)
         }
+        unbindFromService(context)
+
         loadVideo(videoUrl)
 
         updateBackgroundService(context)
@@ -94,10 +97,12 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     private fun unbindFromService(context: Context) {
-        if (isServiceBound) {
-            context.unbindService(serviceConnection)
-            isServiceBound = false
-        }
+        try {
+            if (isServiceBound) {
+                context.unbindService(serviceConnection)
+                isServiceBound = false
+            }
+        } catch (_: IllegalArgumentException) {}
     }
 
     fun handleAppInBackground(context: Context) {
@@ -129,38 +134,56 @@ class VideoPlayerViewModel : ViewModel() {
     }
 
     private fun urlsAreEqualExcludingKs(url1: String, url2: String): Boolean {
-        if (url1.isEmpty()) return false
-        if (url2.isEmpty()) return false
-        val normalizedUrl1 = normalizeUrl(url1)
-        val normalizedUrl2 = normalizeUrl(url2)
-        return normalizedUrl1 == normalizedUrl2
+        if (url1.isEmpty() || url2.isEmpty()) return false
+
+        return try {
+            val normalizedUrl1 = normalizeUrl(url1)
+            val normalizedUrl2 = normalizeUrl(url2)
+            normalizedUrl1 == normalizedUrl2
+        } catch (e: MalformedURLException) {
+            // Якщо URL некоректний, повертаємо false
+            e.printStackTrace()
+            false
+        } catch (e: Exception) {
+            // Обробляємо будь-які інші непередбачені винятки
+            e.printStackTrace()
+            false
+        }
     }
 
     private fun normalizeUrl(urlString: String): String {
-        val url = URL(urlString)
-        val protocol = url.protocol
-        val host = url.host
-        val port = url.port
-        val path = url.path
+        return try {
+            val url = URL(urlString)
 
-        // Parse query parameters excluding 'ks' and sort them for consistent comparison
-        val queryParams = url.query?.split("&")?.mapNotNull {
-            val parts = it.split("=", limit = 2)
-            if (parts[0] != "ks") {
-                it
-            } else null
-        }?.sorted()?.joinToString("&") ?: ""
+            val protocol = url.protocol ?: return urlString
+            val host = url.host ?: return urlString
+            val port = url.port
+            val path = url.path ?: ""
 
-        // Reconstruct the URL without the 'ks' parameter
-        val normalizedUrl = StringBuilder()
-        normalizedUrl.append(protocol).append("://").append(host)
-        if (port != -1) {
-            normalizedUrl.append(":").append(port)
+            val queryParams = url.query?.split("&")?.mapNotNull {
+                val parts = it.split("=", limit = 2)
+                if (parts[0] != "ks") {
+                    it
+                } else null
+            }?.sorted()?.joinToString("&") ?: ""
+
+            val normalizedUrl = StringBuilder()
+            normalizedUrl.append(protocol).append("://").append(host)
+            if (port != -1) {
+                normalizedUrl.append(":").append(port)
+            }
+            normalizedUrl.append(path)
+            if (queryParams.isNotEmpty()) {
+                normalizedUrl.append("?").append(queryParams)
+            }
+            normalizedUrl.toString()
+
+        } catch (e: MalformedURLException) {
+            e.printStackTrace()
+            urlString
+        } catch (e: Exception) {
+            e.printStackTrace()
+            urlString
         }
-        normalizedUrl.append(path)
-        if (queryParams.isNotEmpty()) {
-            normalizedUrl.append("?").append(queryParams)
-        }
-        return normalizedUrl.toString()
     }
 }

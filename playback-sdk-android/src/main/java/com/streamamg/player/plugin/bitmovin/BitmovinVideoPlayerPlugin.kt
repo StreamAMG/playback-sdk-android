@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -16,6 +18,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
@@ -24,6 +27,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
@@ -36,6 +42,7 @@ import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
 class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
+    private var playerView: PlayerView? = null
     override val name: String = "Bitmovin"
     override val version: String = "1.0"
 
@@ -47,16 +54,22 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
         playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
+        playerConfig.playbackConfig.fullscreenRotationEnabled = config.playbackConfig.fullscreenRotationEnabled
     }
 
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
-        val playerViewModel: VideoPlayerViewModel = viewModel()
+        val context = LocalContext.current
+        val activity = context.findActivity() as? ComponentActivity
+        val playerViewModel: VideoPlayerViewModel = activity?.let {
+            ViewModelProvider(it)[VideoPlayerViewModel::class.java]
+        } ?: viewModel()
 
         this.hlsUrl = hlsUrl
-        val context = LocalContext.current
         val currentLifecycle = LocalLifecycleOwner.current
         val lastHlsUrl = remember { mutableStateOf(hlsUrl) }
+        val configuration = LocalConfiguration.current
+
 
         if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
@@ -83,21 +96,27 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    PlayerView(context, playerViewModel.player).apply {
-                        setFullscreenHandler(fullscreenHandler)
+                    playerView = PlayerView(context, playerViewModel.player).apply {
                         keepScreenOn = true
                         player = playerViewModel.player
                     }
+                    playerView!!
                 },
                 update = { view ->
                     if (isReady.value) {
+                        playerView?.setFullscreenHandler(fullscreenHandler)
                         view.player = playerViewModel.player
                         playerViewModel.updateBackgroundService(context)
                     }
                 }
             )
 
-            DisposableEffect(currentLifecycle) {
+            playerView?.setFullscreenHandler(fullscreenHandler)
+
+            if (playerConfig.playbackConfig.fullscreenRotationEnabled)
+                DetectRotationAndFullscreen(playerView)
+
+            DisposableEffect(currentLifecycle, configuration) {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
                         Lifecycle.Event.ON_STOP -> {
@@ -116,6 +135,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     }
                 }
                 currentLifecycle.lifecycle.addObserver(observer)
+
                 onDispose {
                     currentLifecycle.lifecycle.removeObserver(observer)
                 }

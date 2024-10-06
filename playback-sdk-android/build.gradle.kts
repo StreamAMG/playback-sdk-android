@@ -148,6 +148,7 @@ tasks.create<org.gradle.jvm.tasks.Jar>("releaseSourcesJar") {
 dependencies {
     implementation("androidx.compose.runtime:runtime:1.6.2")
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.compose.foundation:foundation-layout-android:1.6.2")

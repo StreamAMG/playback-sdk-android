@@ -12,5 +12,6 @@ data class VideoPlayerConfig(
 @Serializable
 data class PlaybackConfig(
     var autoplayEnabled: Boolean = true,
-    var backgroundPlaybackEnabled: Boolean = true
+    var backgroundPlaybackEnabled: Boolean = true,
+    var fullscreenRotationEnabled: Boolean = true
 )
