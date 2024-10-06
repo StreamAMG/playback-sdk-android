@@ -102,7 +102,6 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    Log.d("SDK", "New PlayerView factory called")
                     playerView = PlayerView(context, playerViewModel.player).apply {
                         keepScreenOn = true
                         player = playerViewModel.player
@@ -110,9 +109,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                     playerView!!
                 },
                 update = { view ->
-                    Log.d("SDK", "View updated ${isReady.value}")
                     if (isReady.value) {
-                        Log.d("SDK", "Player ready")
                         view.player = playerViewModel.player
                         playerView?.setFullscreenHandler(fullscreenHandler)
                         playerView?.invalidate()
