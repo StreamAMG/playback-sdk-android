@@ -179,7 +179,7 @@ class VideoPlayerViewModel : ViewModel() {
 
             val queryParams = url.query?.split("&")?.mapNotNull {
                 val parts = it.split("=", limit = 2)
-                if (parts[0] != "ks") {
+                if (parts.size == 2 && parts[0] != "ks") {
                     it
                 } else null
             }?.sorted()?.joinToString("&") ?: ""
