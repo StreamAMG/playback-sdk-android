@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,8 +27,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
@@ -55,6 +52,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
         playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         playerConfig.playbackConfig.fullscreenRotationEnabled = config.playbackConfig.fullscreenRotationEnabled
+        playerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
     }
 
     @Composable
@@ -114,7 +112,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 update = { view ->
                     if (isReady.value) {
                         view.player = playerViewModel.player
-                        playerView?.setFullscreenHandler(fullscreenHandler)
+                        if (playerConfig.playbackConfig.fullscreenEnabled)
+                            playerView?.setFullscreenHandler(fullscreenHandler)
                         playerView?.invalidate()
                         playerViewModel.updateBackgroundService(context)
                     }
