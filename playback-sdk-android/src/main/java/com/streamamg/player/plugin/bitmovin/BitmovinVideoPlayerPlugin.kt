@@ -60,7 +60,10 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     @Composable
     override fun PlayerView(hlsUrl: String): Unit {
         val context = LocalContext.current
-        val isJetpackCompose = LocalViewModelStoreOwner.current != null
+        val isJetpackCompose = when (context) {
+            is ComponentActivity -> true
+            else -> false
+        }
 
         val activity = context.findActivity() as? ComponentActivity
         val playerViewModel: VideoPlayerViewModel = if (isJetpackCompose) viewModel() else activity?.let {
