@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.viewModelScope
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.event.PlayerEvent
@@ -16,6 +18,7 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.ui.BackgroundPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -74,8 +77,10 @@ class VideoPlayerViewModel : ViewModel() {
     private fun loadVideo(videoUrl: String) {
         if (!urlsAreEqualExcludingKs(currentVideoUrl ?: "", videoUrl)) {
             val sourceConfig = SourceConfig.fromUrl(videoUrl)
+            Log.d("SDK", "Loading new Source")
             player?.load(sourceConfig)
         }
+        Log.d("SDK", "Loading existing source")
         currentVideoUrl = videoUrl
         player?.next(PlayerEvent.Ready::class.java) {
             _isPlayerReady.value = true
@@ -142,6 +147,12 @@ class VideoPlayerViewModel : ViewModel() {
         if (isPlayerReady.value) {
             player?.pause()
         }
+    }
+
+    fun clean() {
+        // call this in main thread if it was called from background
+        pauseVideo()
+        currentVideoUrl = null
     }
 
     override fun onCleared() {

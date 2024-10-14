@@ -38,7 +38,7 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
-class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
+class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     private var playerView: PlayerView? = null
     override val name: String = "Bitmovin"
     override val version: String = "1.0"
@@ -47,6 +47,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
+    private var playerViewModel: VideoPlayerViewModel? = null
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
@@ -64,7 +65,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         }
 
         val activity = context.findActivity() as? ComponentActivity
-        val playerViewModel: VideoPlayerViewModel = if (isJetpackCompose) viewModel() else activity?.let {
+        playerViewModel = if (isJetpackCompose) viewModel() else activity?.let {
             ViewModelProvider(it)[VideoPlayerViewModel::class.java]
         } ?: viewModel()
 
@@ -77,45 +78,45 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
         if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
                 RequestMissingPermissions { granted ->
-                    playerViewModel.updatePermissionsState(granted, context)
+                    playerViewModel?.updatePermissionsState(granted, context)
                 }
             } else {
-                playerViewModel.updatePermissionsState(true, context)
+                playerViewModel?.updatePermissionsState(true, context)
             }
         }
 
         DisposableEffect(hlsUrl) {
-            playerViewModel.initializePlayer(context, playerConfig, hlsUrl)
-            playerBind = playerViewModel.player
+            playerViewModel?.initializePlayer(context, playerConfig, hlsUrl)
+            playerBind = playerViewModel?.player
             onDispose {
                 if (isJetpackCompose) {
-                    playerViewModel.unbindAndStopService(context)
+                    playerViewModel?.unbindAndStopService(context)
                 } else {
-                    playerViewModel.handleAppInBackground(context)
+                    playerViewModel?.handleAppInBackground(context)
                 }
             }
         }
 
-        val isReady = playerViewModel.isPlayerReady.collectAsState()
+        val isReady = playerViewModel?.isPlayerReady?.collectAsState()
 
         key(lastHlsUrl.value) {
             // Force recomposition when the HLS URL changes
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    playerView = PlayerView(context, playerViewModel.player).apply {
+                    playerView = PlayerView(context, playerViewModel?.player).apply {
                         keepScreenOn = true
-                        player = playerViewModel.player
+                        player = playerViewModel?.player
                     }
                     playerView!!
                 },
                 update = { view ->
-                    if (isReady.value) {
-                        view.player = playerViewModel.player
+                    if (isReady?.value == true) {
+                        view.player = playerViewModel?.player
                         if (playerConfig.playbackConfig.fullscreenEnabled)
                             playerView?.setFullscreenHandler(fullscreenHandler)
                         playerView?.invalidate()
-                        playerViewModel.updateBackgroundService(context)
+                        playerViewModel?.updateBackgroundService(context)
                     }
                 }
             )
@@ -127,16 +128,16 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
                 val observer = LifecycleEventObserver { _, event ->
                     when (event) {
                         Lifecycle.Event.ON_STOP -> {
-                            playerViewModel.handleAppInBackground(context)
+                            playerViewModel?.handleAppInBackground(context)
                         }
                         Lifecycle.Event.ON_START -> {
-                            playerViewModel.handleAppInForeground(context)
+                            playerViewModel?.handleAppInForeground(context)
                         }
                         Lifecycle.Event.ON_PAUSE -> {
-                            playerViewModel.handleAppInBackground(context)
+                            playerViewModel?.handleAppInBackground(context)
                         }
                         Lifecycle.Event.ON_RESUME -> {
-                            playerViewModel.handleAppInForeground(context)
+                            playerViewModel?.handleAppInForeground(context)
                         }
                         else -> {}
                     }
@@ -220,6 +221,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin {
 
     override fun removePlayer() {
         playerBind?.destroy()
+    }
+
+    override fun clean(context: Context) {
+        playerViewModel?.unbindAndStopService(context=context)
+        playerViewModel?.clean()
     }
 
     private val fullscreenHandler = object : FullscreenHandler {
