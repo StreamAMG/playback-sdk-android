@@ -12,9 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.streamamg.PlaybackAPIError
 import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerPluginManager
+import com.streamamg.player.plugin.bitmovin.LifecycleCleaner
 
 object PlaybackUIView {
 
@@ -27,11 +29,15 @@ object PlaybackUIView {
     ) {
         var hasFetchedVideoDetails by remember { mutableStateOf(false) }
         var videoURL: String? by remember { mutableStateOf(null) }
+        val context = LocalContext.current
 
         LaunchedEffect(entryId) {
             PlaybackSDKManager.loadHLSStream(entryId, authorizationToken, userAgent) { hlsURL, error ->
                 if (error != null) {
                     // Handle error
+                    VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
+                        (plugin as? LifecycleCleaner)?.clean(context)
+                    }
                     onError?.invoke(error)
                 } else {
                     // Update video URL

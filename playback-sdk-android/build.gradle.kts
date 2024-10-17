@@ -148,6 +148,7 @@ tasks.create<org.gradle.jvm.tasks.Jar>("releaseSourcesJar") {
 dependencies {
     implementation("androidx.compose.runtime:runtime:1.6.2")
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.compose.foundation:foundation-layout-android:1.6.2")
@@ -165,4 +166,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.28.0")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0-RC")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
 }
