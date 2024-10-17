@@ -38,6 +38,11 @@ import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
 
 
+internal interface FullscreenListener {
+    fun enterFullscreen()
+    fun exitFullscreen()
+}
+
 class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     private var playerView: PlayerView? = null
     override val name: String = "Bitmovin"
@@ -122,7 +127,13 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
             )
 
             if (playerConfig.playbackConfig.fullscreenRotationEnabled)
-                DetectRotationAndFullscreen(playerView)
+                DetectRotationAndFullscreen(playerView) { isFullscreen ->
+                    if (isFullscreen) {
+                        playerView?.enterFullscreen()
+                    } else {
+                        playerView?.exitFullscreen()
+                    }
+                }
 
             DisposableEffect(currentLifecycle, configuration) {
                 val observer = LifecycleEventObserver { _, event ->

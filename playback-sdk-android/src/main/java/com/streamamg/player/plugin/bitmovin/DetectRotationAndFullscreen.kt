@@ -12,7 +12,7 @@ import com.bitmovin.player.PlayerView
 import kotlin.math.absoluteValue
 
 @Composable
-fun DetectRotationAndFullscreen(playerView: PlayerView?) {
+fun DetectRotationAndFullscreen(playerView: PlayerView?, callback: (isFullscreen: Boolean) -> Unit) {
     val context = LocalContext.current
     var isLandscape by remember { mutableStateOf(false) }
 
@@ -32,14 +32,16 @@ fun DetectRotationAndFullscreen(playerView: PlayerView?) {
                         if (!isLandscape) {
                             isLandscape = true
                             Log.d("Orientation", "Landscape mode detected")
-                            playerView?.enterFullscreen()
+//                            playerView?.enterFullscreen()
+                            callback.invoke(true)
                         }
                     } else {
                         // Portrait mode
                         if (isLandscape) {
                             isLandscape = false
                             Log.d("Orientation", "Portrait mode detected")
-                            playerView?.exitFullscreen()
+//                            playerView?.exitFullscreen()
+                            callback.invoke(false)
                         }
                     }
                 }
