@@ -11,7 +11,9 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
+import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.PlayerEvent
+import com.bitmovin.player.api.event.on
 import com.bitmovin.player.api.source.SourceConfig
 import com.streamamg.PlaybackSDKManager
 import com.streamamg.player.plugin.VideoPlayerConfig
@@ -30,6 +32,7 @@ class VideoPlayerViewModel : ViewModel() {
     private var backgroundPlaybackEnabled = false
     private var autoplayEnabled = false
     private var isPermissionsGranted = false
+    private var isPlayerPaused = false
     private var _isPlayerReady = MutableStateFlow(false)
     val isPlayerReady: StateFlow<Boolean>
         get() = _isPlayerReady
@@ -77,10 +80,9 @@ class VideoPlayerViewModel : ViewModel() {
     private fun loadVideo(videoUrl: String) {
         if (!urlsAreEqualExcludingKs(currentVideoUrl ?: "", videoUrl)) {
             val sourceConfig = SourceConfig.fromUrl(videoUrl)
-            Log.d("SDK", "Loading new Source")
+            isPlayerPaused = false
             player?.load(sourceConfig)
         }
-        Log.d("SDK", "Loading existing source")
         currentVideoUrl = videoUrl
         player?.next(PlayerEvent.Ready::class.java) {
             _isPlayerReady.value = true
@@ -88,7 +90,10 @@ class VideoPlayerViewModel : ViewModel() {
         player?.next(PlayerEvent.Error::class.java) {
             Log.d("SDK", "Player error")
         }
-        if (autoplayEnabled) {
+        player?.next(PlayerEvent.Paused::class) {
+            isPlayerPaused = player?.isPaused == true
+        }
+        if (autoplayEnabled && !isPlayerPaused) {
             player?.play()
         }
 
@@ -132,7 +137,7 @@ class VideoPlayerViewModel : ViewModel() {
     fun handleAppInForeground(context: Context) {
         if (backgroundPlaybackEnabled && _isPlayerReady.value) {
             unbindFromService(context)
-        } else if (autoplayEnabled) {
+        } else if (autoplayEnabled && !isPlayerPaused) {
             player?.play()
         }
     }
