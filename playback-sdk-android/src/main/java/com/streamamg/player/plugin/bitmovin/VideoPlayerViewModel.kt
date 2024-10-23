@@ -88,9 +88,12 @@ class VideoPlayerViewModel : ViewModel() {
             _isPlayerReady.value = true
         }
         player?.next(PlayerEvent.Error::class.java) {
-            Log.d("SDK", "Player error")
+            Log.d("SDK", "Player error ${it.message}")
         }
         player?.next(PlayerEvent.Paused::class) {
+            isPlayerPaused = player?.isPaused == true
+        }
+        player?.next(PlayerEvent.Play::class) {
             isPlayerPaused = player?.isPaused == true
         }
         if (autoplayEnabled && !isPlayerPaused) {
