@@ -27,7 +27,7 @@ object PlaybackSDKManager {
 
     //region Private Properties
 
-    private lateinit var playBackAPI: PlaybackAPI
+    private var playBackAPI: PlaybackAPI? = null
     private lateinit var playerInformationAPI: PlayerInformationAPI
 
     private lateinit var amgAPIKey: String
@@ -164,15 +164,15 @@ object PlaybackSDKManager {
         completion: (URL?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playBackAPI.getVideoDetails(entryId, authorizationToken, userAgent)
-                .catch { e ->
+            playBackAPI?.getVideoDetails(entryId, authorizationToken, userAgent)
+                ?.catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
                         is PlaybackAPIError -> completion(null, e)
                         else -> completion(null, PlaybackAPIError.NetworkError(e))
                     }
                 }
-                .collect { videoDetails ->
+                ?.collect { videoDetails ->
                     // Successfully retrieved video details, now check for the HLS URL
                     val hlsURLString = videoDetails.media?.hls
                     if (!hlsURLString.isNullOrEmpty()) {

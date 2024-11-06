@@ -28,13 +28,6 @@ class BackgroundPlaybackService : Service() {
 
         private var player: Player? = null
 
-        fun setPlayer(context: Context) {
-            if (player == null) {
-                val playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
-                player = Player(context, playerConfig)
-            }
-        }
-
         fun releasePlayer() {
             player?.destroy()
             player = null
@@ -78,8 +71,6 @@ class BackgroundPlaybackService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        setPlayer(this)
-
         // Create a PlayerNotificationManager with the static create method
         // By passing null for the mediaDescriptionAdapter, a DefaultMediaDescriptionAdapter will be used internally.
         playerNotificationManager = PlayerNotificationManager.createWithNotificationChannel(
@@ -103,9 +94,6 @@ class BackgroundPlaybackService : Service() {
                     stopSelf()
                 }
             })
-
-            // Attaching the Player to the PlayerNotificationManager
-            setPlayer(sharedPlayer)
         }
     }
 
@@ -136,5 +124,10 @@ class BackgroundPlaybackService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         isRunning = true
         return START_STICKY
+    }
+
+    fun setPlayer(playerBind: Player?) {
+        this.player = playerBind
+        playerNotificationManager.setPlayer(playerBind)
     }
 }
