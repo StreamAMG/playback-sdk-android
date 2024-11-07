@@ -163,7 +163,7 @@
                       },
                       {
                         "type": "text",
-                        "text": "Create an instance of the custom video player plugin and configure it by setting playback options such as autoplay and background playback. To do this, create a `VideoPlayerConfig` object, update its autoplay and background playback settings, and then pass this configuration object to the plugin."
+                        "text": "Create an instance of the custom video player plugin and configure it by setting playback options such as autoplay, background playback, and fullscreen settings. Begin by creating a VideoPlayerConfig object, then update its autoplay, background playback, and fullscreen settings, including enabling fullscreen on screen rotation (fullscreenRotationEnabled) and activating the fullscreen button (fullscreenEnabled). Finally, pass this configuration object to the plugin."
                       },
                       {
                         "type": "text",
@@ -302,7 +302,7 @@
                       {
                         "type": "text",
                         "text": "The "
-                      },
+                      },  
                       {
                         "type": "strong",
                         "inlineContent": [
@@ -513,6 +513,8 @@
             "            val playerConfig = VideoPlayerConfig()",
             "            playerConfig.playbackConfig.autoplayEnabled = true",
             "            playerConfig.playbackConfig.backgroundPlaybackEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenRotationEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenEnabled = true",
             "            // Inject the player config to the plugin",
             "            customPlugin.setup(playerConfig)",
             "",
@@ -665,6 +667,8 @@
             "            val playerConfig = VideoPlayerConfig()",
             "            playerConfig.playbackConfig.autoplayEnabled = true",
             "            playerConfig.playbackConfig.backgroundPlaybackEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenRotationEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenEnabled = true",
             "            // Inject the player config to the plugin",
             "            customPlugin.setup(playerConfig)",
             "",
@@ -755,6 +759,8 @@
             "            val playerConfig = VideoPlayerConfig()",
             "            playerConfig.playbackConfig.autoplayEnabled = true",
             "            playerConfig.playbackConfig.backgroundPlaybackEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenRotationEnabled = true",
+            "            playerConfig.playbackConfig.fullscreenEnabled = true",
             "            // Inject the player config to the plugin",
             "            customPlugin.setup(playerConfig)",
             "",
