@@ -43,6 +43,7 @@ object PlaybackSDKManager {
      */
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
+    internal var analyticsLicense: String? = null
     private var userAgent: String? = null
 
     val playbackSdkVersion = BuildConfig.SDK_VERSION
@@ -94,17 +95,20 @@ object PlaybackSDKManager {
      * Composable function that loads and renders the player UI.
      * @param entryID The ID of the entry.
      * @param authorizationToken The authorization token.
+     * @param analyticsViewerId The user's id to be tracked in analytics
      * @param onError Callback for handling errors. Default is null.
      */
     @Composable
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
+        analyticsViewerId: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
             authorizationToken = authorizationToken,
             entryId = entryID,
+            analyticsViewerId = analyticsViewerId,
             userAgent = this.userAgent,
             onError = onError
         )
@@ -133,6 +137,9 @@ object PlaybackSDKManager {
                 }
 
                 val bitmovinLicense = playerInfo?.player?.bitmovin?.license
+                val analyticsLicense = playerInfo?.player?.bitmovin?.integrations?.mux?.envKey
+
+                this@PlaybackSDKManager.analyticsLicense = analyticsLicense
 
                 this@PlaybackSDKManager.bitmovinLicense = bitmovinLicense ?: run {
                     completion(null, SDKError.MissingLicense)

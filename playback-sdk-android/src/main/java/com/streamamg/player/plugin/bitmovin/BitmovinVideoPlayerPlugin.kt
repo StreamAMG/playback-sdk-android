@@ -28,8 +28,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bitmovin.analytics.api.AnalyticsConfig
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
+import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.ui.FullscreenHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -49,6 +51,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     override val version: String = "1.0"
 
     private var hlsUrl: String = ""
+    private var analyticsViewerId: String? = null
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
     private val fullscreen = mutableStateOf(false)
@@ -61,8 +64,10 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         playerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
     }
 
+
+
     @Composable
-    override fun PlayerView(hlsUrl: String): Unit {
+    override fun PlayerView(hlsUrl: String, analyticsViewerId: String?): Unit {
         val context = LocalContext.current
         val isJetpackCompose = when (context) {
             is ComponentActivity -> true
@@ -74,6 +79,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
             ViewModelProvider(it)[VideoPlayerViewModel::class.java]
         } ?: viewModel()
 
+        this.analyticsViewerId = analyticsViewerId
         this.hlsUrl = hlsUrl
         val currentLifecycle = LocalLifecycleOwner.current
         val lastHlsUrl = remember { mutableStateOf(hlsUrl) }
@@ -91,7 +97,7 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         }
 
         DisposableEffect(hlsUrl) {
-            playerViewModel?.initializePlayer(context, playerConfig, hlsUrl)
+            playerViewModel?.initializePlayer(context, playerConfig, hlsUrl, analyticsViewerId)
             playerBind = playerViewModel?.player
             onDispose {
                 if (isJetpackCompose) {
