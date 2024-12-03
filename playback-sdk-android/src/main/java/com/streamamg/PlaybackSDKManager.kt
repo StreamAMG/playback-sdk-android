@@ -102,7 +102,7 @@ object PlaybackSDKManager {
     fun loadPlayer(
         entryID: String,
         authorizationToken: String?,
-        analyticsViewerId: String?,
+        analyticsViewerId: String? = null,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         PlaybackUIView(
