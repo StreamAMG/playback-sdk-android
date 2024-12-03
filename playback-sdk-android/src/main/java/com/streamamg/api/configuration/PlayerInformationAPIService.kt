@@ -3,6 +3,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.IOException
@@ -80,8 +81,8 @@ internal data class Integrations(
 
 @Serializable
 internal data class Mux(
-    val playerName: String? = null,
-    val envKey: String? = null
+    @SerialName("player_name") val playerName: String? = null,
+    @SerialName("env_key") val envKey: String? = null
 )
 
 @Serializable
