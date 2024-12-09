@@ -27,7 +27,7 @@ class NativeMediaPlayerPlugin : VideoPlayerPlugin {
     }
 
     @Composable
-    override fun PlayerView(hlsUrl: String): Unit {
+    override fun PlayerView(hlsUrl: String, analyticsViewerId: String?) {
         mediaPlayer = MediaPlayer()
 
         val textureView = rememberTextureView()

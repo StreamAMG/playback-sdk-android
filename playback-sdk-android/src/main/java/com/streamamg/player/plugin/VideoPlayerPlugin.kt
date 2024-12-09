@@ -39,7 +39,7 @@ interface VideoPlayerPlugin {
      * @param hlsUrl The HLS URL of the video to be played.
      */
     @Composable
-    fun PlayerView(hlsUrl: String)
+    fun PlayerView(hlsUrl: String, analyticsViewerId: String?)
 
     /**
      * Starts playback of the video.

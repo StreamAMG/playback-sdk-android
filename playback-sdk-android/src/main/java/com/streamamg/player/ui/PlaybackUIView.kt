@@ -24,6 +24,7 @@ object PlaybackUIView {
     fun PlaybackUIView(
         authorizationToken: String?,
         entryId: String,
+        analyticsViewerId: String?,
         userAgent: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
@@ -59,7 +60,7 @@ object PlaybackUIView {
             } else {
                 videoURL?.let { url ->
                     VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
-                        plugin.PlayerView(url)
+                        plugin.PlayerView(url, analyticsViewerId)
                     }
                 } ?: run {
                     // TODO: Handle null video URL (Error UI View)
