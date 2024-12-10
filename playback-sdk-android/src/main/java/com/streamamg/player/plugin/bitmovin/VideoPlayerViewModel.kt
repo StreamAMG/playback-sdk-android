@@ -9,8 +9,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.viewModelScope
+import com.bitmovin.analytics.api.AnalyticsConfig
+import com.bitmovin.analytics.api.DefaultMetadata
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
+import com.bitmovin.player.api.analytics.AnalyticsPlayerConfig
 import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
@@ -50,14 +53,15 @@ class VideoPlayerViewModel : ViewModel() {
         }
     }
 
-    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoUrl: String) {
+    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoUrl: String, analyticsViewerId: String? = null) {
         this.config = config
         backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         autoplayEnabled = config.playbackConfig.autoplayEnabled
         if (player == null) {
             val playerConfig =
                 PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
-            player = Player(context, playerConfig)
+            val analyticsConfig = provideAnalyticsConfig(PlaybackSDKManager.analyticsLicense, analyticsViewerId)
+            player = Player(context, playerConfig, analyticsConfig)
         }
         unbindFromService(context)
 
@@ -75,6 +79,13 @@ class VideoPlayerViewModel : ViewModel() {
     fun updatePermissionsState(isGranted: Boolean, context: Context) {
         isPermissionsGranted = isGranted
         updateBackgroundService(context)
+    }
+
+    private fun provideAnalyticsConfig(license: String? = null, analyticsViewerId: String?): AnalyticsPlayerConfig {
+        return license?.let {
+            val config = AnalyticsConfig.Builder(it).build()
+            AnalyticsPlayerConfig.Enabled(config, DefaultMetadata(customUserId = analyticsViewerId))
+        } ?: AnalyticsPlayerConfig.Disabled
     }
 
     private fun loadVideo(videoUrl: String) {
