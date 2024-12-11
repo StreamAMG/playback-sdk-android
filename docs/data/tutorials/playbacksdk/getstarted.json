@@ -539,7 +539,7 @@
             "}",
             "",
             "@Composable",
-            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "fun PlayerContent(entryId: String, authorizationToken: String, analyticsViewerId: String=\"\") {",
 
             "    val context = LocalContext.current",
             "    PlaybackSDKManager.updateCastContext(context)",
@@ -575,7 +575,7 @@
             "                ) {",
             "                    val viewerId = \"viewer id\"",
             " ",
-            "                    PlaybackSDKManager.loadPlayer(entryId, viewerId, authorizationToken) { error ->",
+            "                    PlaybackSDKManager.loadPlayer(entryId, viewerId, authorizationToken, analyticsViewerId) { error ->",
             "                        Log.e(\"PlayerActivity\", error.message.toString())",
             "                        when (error) {",
             "                            is PlaybackAPIError.ApiError -> {",
@@ -789,7 +789,7 @@
             "}",
             "",
             "@Composable",
-            "fun PlayerContent(entryId: String, authorizationToken: String) {",
+            "fun PlayerContent(entryId: String, authorizationToken: String, analyticsViewerId: String = \"\") {",
             "   // Yours UI for the screen ",           
             "}"
           ]
