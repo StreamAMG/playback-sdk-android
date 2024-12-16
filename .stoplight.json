@@ -1,0 +1,20 @@
+{
+  "exclude": [
+    ".git*",
+    ".idea",
+    "app",
+    "gradle*",
+    "playback-sdk-android",
+    "build*",
+    "settings*",
+    "docs"
+    ],
+  "formats": {
+    "markdown": {
+      "rootDir": "docs",
+      "include": [
+        "**/*.md"
+      ]
+    }
+  }
+}
