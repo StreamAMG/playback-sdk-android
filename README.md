@@ -189,8 +189,22 @@ To use the Google Chromecast support, use the `updateCastContext` method of the 
         ...
     }
 ```
+# Bitmovin analytics
 
-## Resources
+Currently SDK support tracking analytics on Bitmovin service. In case you have a logged-in user and want to track Bitmovin analytics for the current session, you need to pass the user's ID in the `analyticsViewerId` parameter.
+
+```kotlin
+    setContent {
+        entryId = "..."
+        authorizationToken = "..."
+        viewerAnalyticsId = "user id or empty string"
+        PlaybackSDKManager.loadPlayer(entryId, authorizationToken, viewerAnalyticsId) { error ->
+            onPlayerError(error)
+        }
+    }
+```
+
+# Resources
 
 - **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
 - **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)
