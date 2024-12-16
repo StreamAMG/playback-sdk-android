@@ -184,7 +184,7 @@ To use the Google Chromecast support, use the `updateCastContext` method of the 
     }
 ```
 
-# Bitmovin analytics
+## Bitmovin analytics
 
 Currently SDK support tracking analytics on Bitmovin service. In case you have a logged-in user and want to track Bitmovin analytics for the current session, you need to pass the user's ID in the `analyticsViewerId` parameter.
 
