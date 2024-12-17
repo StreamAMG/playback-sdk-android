@@ -139,7 +139,7 @@ To play on-demand and live videos that require authorization, at some point befo
 
 Then the same token should be passed into the `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
 
-> \[!NOTE]
+> \[NOTE]
 > If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
 
 ## Configure user-agent
