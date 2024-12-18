@@ -139,7 +139,7 @@ To play on-demand and live videos that require authorization, at some point befo
 
 Then the same token should be passed into the `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
 
-> \[!NOTE]
+> \[NOTE]
 > If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
 
 ## Configure user-agent
@@ -189,7 +189,7 @@ To use the Google Chromecast support, use the `updateCastContext` method of the 
         ...
     }
 ```
-# Bitmovin analytics
+## Bitmovin analytics
 
 Currently SDK support tracking analytics on Bitmovin service. In case you have a logged-in user and want to track Bitmovin analytics for the current session, you need to pass the user's ID in the `analyticsViewerId` parameter.
 
@@ -204,7 +204,7 @@ Currently SDK support tracking analytics on Bitmovin service. In case you have a
     }
 ```
 
-# Resources
+## Resources
 
 - **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
 - **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)
