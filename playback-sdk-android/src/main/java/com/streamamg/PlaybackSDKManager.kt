@@ -5,18 +5,23 @@ import PlayerInformationAPIService
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import com.bitmovin.player.api.source.Source
+import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.casting.BitmovinCastManager
 import com.streamamg.api.player.PlaybackAPI
 import com.streamamg.api.player.PlaybackAPIService
+import com.streamamg.api.player.PlaybackResponseModel
+import com.streamamg.api.player.PlaybackVideoDetails
 import com.streamamg.playback_sdk_android.BuildConfig
 import com.streamamg.player.ui.PlaybackUIView.PlaybackUIView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.net.URL
 
 /**
  * Singleton object to manage playback SDK functionalities.
@@ -27,12 +32,12 @@ object PlaybackSDKManager {
 
     //region Private Properties
 
-    private var playBackAPI: PlaybackAPI? = null
+    private var playbackAPI: PlaybackAPI? = null
     private lateinit var playerInformationAPI: PlayerInformationAPI
 
     private lateinit var amgAPIKey: String
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private lateinit var playBackAPIService: PlaybackAPIService
+    private lateinit var playbackAPIService: PlaybackAPIService
 
     //endregion
 
@@ -79,8 +84,8 @@ object PlaybackSDKManager {
         baseURL?.let { this.baseURL = it }
         amgAPIKey = apiKey
         playerInformationAPI = PlayerInformationAPIService(apiKey)
-        playBackAPIService = PlaybackAPIService(apiKey)
-        this.playBackAPI = playBackAPIService
+        playbackAPIService = PlaybackAPIService(apiKey)
+        this.playbackAPI = playbackAPIService
         this.userAgent = userAgent
 
         // Fetching player information
@@ -111,6 +116,36 @@ object PlaybackSDKManager {
             analyticsViewerId = analyticsViewerId,
             userAgent = this.userAgent,
             onError = onError
+        )
+    }
+
+    //endregion
+
+    //region Load Playlist
+
+    /**
+     * Composable function that loads a list of videos and renders the player UI.
+     * @param entryIDs A list of the videos to be loaded.
+     * @param entryIDToPlay The first video Id to be played. If not provided, the first video in the entryIDs array will be played.
+     * @param authorizationToken The authorization token.
+     * @param analyticsViewerId The user's id to be tracked in analytics
+     * @param onErrors Return a list of potential playback errors that may occur during the loading process for single entryId.
+     */
+    @Composable
+    fun loadPlaylist(
+        entryIDs: Array<String>,
+        entryIDToPlay: String? = null,
+        authorizationToken: String? = null,
+        analyticsViewerId: String? = null,
+        onErrors: ((Array<PlaybackAPIError>) -> Unit)?
+    ) {
+        PlaybackUIView(
+            entryIDs = entryIDs,
+            entryIDToPlay = entryIDToPlay,
+            authorizationToken = authorizationToken,
+            analyticsViewerId = analyticsViewerId,
+            userAgent = this.userAgent,
+            onErrors = onErrors
         )
     }
 
@@ -162,16 +197,17 @@ object PlaybackSDKManager {
      * Loads the HLS stream.
      * @param entryId The ID of the entry.
      * @param authorizationToken The authorization token.
+     * @param userAgent Custom user-agent header for the loading requests.
      * @param completion Callback to be invoked upon completion of loading the HLS stream.
      */
-    fun loadHLSStream(
+    internal fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
-        userAgent: String?,
-        completion: (URL?, PlaybackAPIError?) -> Unit
+        userAgent: String? = null,
+        completion: (PlaybackResponseModel?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playBackAPI?.getVideoDetails(entryId, authorizationToken, userAgent)
+            playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent ?: this@PlaybackSDKManager.userAgent)
                 ?.catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
@@ -180,21 +216,102 @@ object PlaybackSDKManager {
                     }
                 }
                 ?.collect { videoDetails ->
-                    // Successfully retrieved video details, now check for the HLS URL
-                    val hlsURLString = videoDetails.media?.hls
-                    if (!hlsURLString.isNullOrEmpty()) {
-                        val hlsURL = URL(hlsURLString)
-                        completion(hlsURL, null)
+                    if (videoDetails != null) {
+                        // Successfully retrieved video details
+                        completion(videoDetails, null)
                     } else {
-                        // No HLS URL found in the response
-                        completion(null, PlaybackAPIError.ApiError(0, "HLS URL not available", "No HLS URL found in the response"))
+                        // No video details found in the response
+                        completion(null, PlaybackAPIError.ApiError(0, "Video details not available", "No Video details found in the response"))
                     }
                 }
         }
     }
 
+    //endregion
 
+    //region All HLS Stream
 
+    /**
+     * Loads All the HLS stream.
+     * @param entryIDs The ID list of the entries.
+     * @param authorizationToken The authorization token.
+     * @param userAgent Custom user-agent header for the loading requests.
+     * @param completion Callback to be invoked upon completion of loading the HLS stream.
+     */
+    internal fun loadAllHLSStream(
+        entryIDs: Array<String>,
+        authorizationToken: String?,
+        userAgent: String? = null,
+        completion: (Pair<Array<PlaybackResponseModel>?, Array<PlaybackAPIError>?>?, PlaybackAPIError?) -> Unit
+    ) {
+        var videoDetails: ArrayList<PlaybackResponseModel> = ArrayList()
+        var playbackErrors: ArrayList<PlaybackAPIError> = ArrayList()
+
+        if (playbackAPI == null) {
+            completion(null, PlaybackAPIError.InitializationError)
+            return
+        }
+
+        coroutineScope.launch(Dispatchers.IO) {
+
+            val deferredList = entryIDs.map { entryId ->
+                async {
+                    playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent ?: this@PlaybackSDKManager.userAgent)
+                        ?.catch { e ->
+                            // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
+                            when (e) {
+                                is PlaybackAPIError -> playbackErrors.add(e)
+                                else -> playbackErrors.add(PlaybackAPIError.NetworkError(e))
+                            }
+                        }
+                        ?.collect { videoDetail ->
+                            if (videoDetail != null) {
+                                // Successfully retrieved video details
+                                videoDetails.add(videoDetail)
+                            } else {
+                                // No video details found in the response
+                                playbackErrors.add(PlaybackAPIError.ApiError(0, "Video details not available", "No Video details found in the response"))
+                            }
+                        }
+                }
+            }
+
+            // Wait for all deferred results
+            deferredList.awaitAll()
+
+            val orderedVideoDetails = entryIDs.mapNotNull { entryId ->
+                videoDetails.find { it.entryId == entryId }
+            }
+
+            // Call completion after all getVideoDetails calls are completed
+            completion(Pair(orderedVideoDetails.toTypedArray(), playbackErrors.toTypedArray()), null)
+        }
+    }
+
+    //endregion
+
+    // region Create Source
+
+    fun createSource(details: PlaybackVideoDetails, authorizationToken: String?): Source? {
+        if (details.url.isNullOrEmpty()) return null
+
+        val sourceConfig = SourceConfig.fromUrl(details.url!!)
+
+        val metadata = mutableMapOf<String, String>()
+
+        if (details.videoId.isNotEmpty()) {
+            metadata["entryId"] = details.videoId
+        }
+
+        // Adding extra details
+        metadata["details"] = details.toString()
+        authorizationToken?.let {
+            metadata["authorizationToken"] = it
+        }
+        sourceConfig.metadata = metadata
+
+        return Source(sourceConfig)
+    }
 
     //endregion
 

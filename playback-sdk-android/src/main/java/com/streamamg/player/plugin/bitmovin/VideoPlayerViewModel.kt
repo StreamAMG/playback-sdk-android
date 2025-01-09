@@ -7,29 +7,32 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.viewModelScope
 import com.bitmovin.analytics.api.AnalyticsConfig
 import com.bitmovin.analytics.api.DefaultMetadata
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.analytics.AnalyticsPlayerConfig
-import com.bitmovin.player.api.event.Event
 import com.bitmovin.player.api.event.PlayerEvent
-import com.bitmovin.player.api.event.on
+import com.bitmovin.player.api.playlist.PlaylistConfig
+import com.bitmovin.player.api.playlist.PlaylistOptions
+import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
 import com.streamamg.PlaybackSDKManager
+import com.streamamg.api.player.PlaybackVideoDetails
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.ui.BackgroundPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import java.net.MalformedURLException
 import java.net.URL
 
 class VideoPlayerViewModel : ViewModel() {
     var player: Player? = null
-    private var currentVideoUrl: String? = null
+    private var sources: List<Source> = emptyList()
+    private var currentVideoDetail: PlaybackVideoDetails? = null
+    private var currentVideoDetails: Array<PlaybackVideoDetails>? = null
+    private var entryIDToPlay: String? = null
+    private var authorizationToken: String? = null
     private var config: VideoPlayerConfig? = null
     private var isServiceBound = false
     private var backgroundPlaybackEnabled = false
@@ -53,10 +56,12 @@ class VideoPlayerViewModel : ViewModel() {
         }
     }
 
-    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoUrl: String, analyticsViewerId: String? = null) {
+    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoDetails: Array<PlaybackVideoDetails>, entryIDToPlay: String?, authorizationToken: String?, analyticsViewerId: String? = null) {
         this.config = config
         backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         autoplayEnabled = config.playbackConfig.autoplayEnabled
+        this.entryIDToPlay = entryIDToPlay
+        this.authorizationToken = authorizationToken
         if (player == null) {
             val playerConfig =
                 PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
@@ -65,7 +70,7 @@ class VideoPlayerViewModel : ViewModel() {
         }
         unbindFromService(context)
 
-        loadVideo(videoUrl)
+        loadPlaylist(videoDetails)
 
         updateBackgroundService(context)
     }
@@ -88,13 +93,13 @@ class VideoPlayerViewModel : ViewModel() {
         } ?: AnalyticsPlayerConfig.Disabled
     }
 
-    private fun loadVideo(videoUrl: String) {
-        if (!urlsAreEqualExcludingKs(currentVideoUrl ?: "", videoUrl)) {
-            val sourceConfig = SourceConfig.fromUrl(videoUrl)
+    private fun loadVideo(videoDetails: PlaybackVideoDetails) {
+        if (!urlsAreEqualExcludingKs(currentVideoDetail?.url ?: "", videoDetails.url ?: "")) {
+            val sourceConfig = SourceConfig.fromUrl(currentVideoDetail?.url ?: "")
             isPlayerPaused = false
             player?.load(sourceConfig)
         }
-        currentVideoUrl = videoUrl
+        currentVideoDetail = videoDetails
         player?.next(PlayerEvent.Ready::class.java) {
             _isPlayerReady.value = true
         }
@@ -110,7 +115,47 @@ class VideoPlayerViewModel : ViewModel() {
         if (autoplayEnabled && !isPlayerPaused) {
             player?.play()
         }
+    }
 
+    private fun loadPlaylist(videoDetails: Array<PlaybackVideoDetails>) {
+        if (!currentVideoDetails.contentEquals(videoDetails)) {
+            isPlayerPaused = false
+            sources = createPlaylist(videoDetails)
+            if (sources.isEmpty()) return
+            val playlistOptions = PlaylistOptions(preloadAllSources = false)
+            val playlistConfig = PlaylistConfig(sources, playlistOptions)
+            player?.load(playlistConfig)
+            player?.playlist?.sources?.firstOrNull { it.config.metadata?.get("entryId") == this.entryIDToPlay }?.let { sourceToPlay ->
+                player?.playlist?.seek(sourceToPlay, 0.0)
+            }
+        }
+        currentVideoDetails = videoDetails
+        player?.next(PlayerEvent.Ready::class.java) {
+            _isPlayerReady.value = true
+        }
+        player?.next(PlayerEvent.Error::class.java) {
+            Log.d("SDK", "Player error ${it.message}")
+        }
+        player?.next(PlayerEvent.Paused::class) {
+            isPlayerPaused = player?.isPaused == true
+        }
+        player?.next(PlayerEvent.Play::class) {
+            isPlayerPaused = player?.isPaused == true
+        }
+        if (autoplayEnabled && !isPlayerPaused) {
+            player?.play()
+        }
+    }
+
+    private fun createPlaylist(videoDetails: Array<PlaybackVideoDetails>): List<Source> {
+        var sources = mutableListOf<Source>()
+        for (details in videoDetails) {
+            val videoSource = PlaybackSDKManager.createSource(details, authorizationToken = authorizationToken)
+            videoSource?.let {
+                sources.add(it)
+            }
+        }
+        return sources
     }
 
     private fun bindToBackgroundPlaybackService(context: Context) {
@@ -171,7 +216,7 @@ class VideoPlayerViewModel : ViewModel() {
     fun clean() {
         // call this in main thread if it was called from background
         pauseVideo()
-        currentVideoUrl = null
+        currentVideoDetails = null
     }
 
     override fun onCleared() {
@@ -188,11 +233,11 @@ class VideoPlayerViewModel : ViewModel() {
             val normalizedUrl2 = normalizeUrl(url2)
             normalizedUrl1 == normalizedUrl2
         } catch (e: MalformedURLException) {
-            // Якщо URL некоректний, повертаємо false
+            // If the URL is incorrect, return false
             e.printStackTrace()
             false
         } catch (e: Exception) {
-            // Обробляємо будь-які інші непередбачені винятки
+            // Handle any other unexpected exceptions
             e.printStackTrace()
             false
         }

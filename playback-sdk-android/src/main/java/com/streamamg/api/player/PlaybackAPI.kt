@@ -14,5 +14,5 @@ internal interface PlaybackAPI {
      * @param authorizationToken Optional authorization token, can be null for free videos.
      * @return A Flow emitting the response model or an error.
      */
-    suspend fun getVideoDetails(entryId: String, authorizationToken: String?, userAgent: String?): Flow<PlaybackResponseModel>
+    suspend fun getVideoDetails(entryId: String, authorizationToken: String?, userAgent: String?): Flow<PlaybackResponseModel?>
 }
