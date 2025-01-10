@@ -203,7 +203,7 @@ object PlaybackSDKManager {
     internal fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
-        userAgent: String? = null,
+        userAgent: String?,
         completion: (PlaybackResponseModel?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
