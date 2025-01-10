@@ -299,7 +299,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     override fun playPrevious() {
         playerBind?.playlist?.sources?.let { sources ->
             val index = sources.indexOfFirst { it.isActive }
-            if (index != -1 && index > 0) {
+            if (index > 0) {
                 val nextIndex = index.minus(1)
                 val prevSource = sources[nextIndex]
                 seekSource(prevSource)
