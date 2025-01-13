@@ -241,7 +241,7 @@ object PlaybackSDKManager {
     internal fun loadAllHLSStream(
         entryIDs: Array<String>,
         authorizationToken: String?,
-        userAgent: String? = null,
+        userAgent: String?,
         completion: (Pair<Array<PlaybackResponseModel>?, Array<PlaybackAPIError>?>?, PlaybackAPIError?) -> Unit
     ) {
         var videoDetails: ArrayList<PlaybackResponseModel> = ArrayList()

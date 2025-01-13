@@ -384,7 +384,11 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         val authorizationToken = source.config.metadata?.get("authorizationToken")
         
         if (entryId != null) {
-            PlaybackSDKManager.loadHLSStream(entryId, authorizationToken) { response, error ->
+            PlaybackSDKManager.loadHLSStream(
+                entryId,
+                authorizationToken,
+                null
+            ) { response, error ->
                 if (error != null) {
                     completion?.invoke(null)
                 } else {
