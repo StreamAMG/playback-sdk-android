@@ -215,7 +215,7 @@ Below is an example implementation in Kotlin using the Playback SDK:
     val authorizationToken = "JWT_TOKEN"
     val analyticsViewerId = "user id or empty string"
 
-   PlaybackSDKManager.loadAllHLSStream(entryIDs, authorizationToken) { details, error ->
+   PlaybackSDKManager.loadAllHLSStream(entryIDs, authorizationToken, analyticsViewerId) { details, error ->
    
       if (error != null) {
          // Handle error
