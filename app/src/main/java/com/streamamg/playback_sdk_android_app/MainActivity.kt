@@ -19,7 +19,7 @@ import com.streamamg.PlaybackSDKManager
 import com.streamamg.PlaybackSDKManager.loadPlayer
 import com.streamamg.player.plugin.VideoPlayerPluginManager
 import com.streamamg.playback_sdk_android_app.ui.theme.PlaybacksdkandroidTheme
-import com.streamamg.player.plugin.bitmovin.BitmovinVideoPlayerPlugin
+import com.streamamg.player.plugin.bitmovin.BitmovinPlayerPlugin
 
 class MainActivity : ComponentActivity() {
 
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
         // Register plugin
         //val customPlugin = NativeMediaPlayerPlugin()
-        val customPlugin = BitmovinVideoPlayerPlugin()
+        val customPlugin = BitmovinPlayerPlugin()
         VideoPlayerPluginManager.registerPlugin(customPlugin)
 
         val entryId = "0_qt9cy11s"
