@@ -204,6 +204,36 @@ Currently SDK support tracking analytics on Bitmovin service. In case you have a
     }
 ```
 
+## Playlist and Analytics
+
+To track analytics while utilizing the playlist functionality, you can provide the user's ID via the `analyticsViewerId` parameter.
+Below is an example implementation in Kotlin using the Playback SDK:
+
+```swift
+    private let entryIDs = ["ENTRY_ID1", "ENTRY_ID_2", "ENTRY_ID_3"]
+    private let entryIDToPlay = "ENTRY_ID_2" // Optional parameter
+    private let authorizationToken = "JWT_TOKEN"
+    let analyticsViewerId = "user id or empty string"
+    
+    var body: some View {
+        VStack {
+            // Load playlist with the playback SDK
+            PlaybackSDKManager.shared.loadPlaylist(entryIDs: entryIDs, 
+                                                entryIDToPlay: entryIDToPlay, 
+                                                authorizationToken: authorizationToken,
+                                                analyticsViewerId: analyticsViewerId) { 
+                errors in
+                    handlePlaybackError(errors)
+            }
+            .onDisappear {
+                // Remove the player here
+            }
+            Spacer()
+        }
+        .padding()
+    }
+```
+
 ## Resources
 
 - **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
