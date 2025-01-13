@@ -114,7 +114,6 @@ object PlaybackSDKManager {
             authorizationToken = authorizationToken,
             entryId = entryID,
             analyticsViewerId = analyticsViewerId,
-            userAgent = this.userAgent,
             onError = onError
         )
     }
@@ -144,7 +143,6 @@ object PlaybackSDKManager {
             entryIDToPlay = entryIDToPlay,
             authorizationToken = authorizationToken,
             analyticsViewerId = analyticsViewerId,
-            userAgent = this.userAgent,
             onErrors = onErrors
         )
     }
@@ -203,11 +201,10 @@ object PlaybackSDKManager {
     internal fun loadHLSStream(
         entryId: String,
         authorizationToken: String?,
-        userAgent: String?,
         completion: (PlaybackResponseModel?, PlaybackAPIError?) -> Unit
     ) {
         coroutineScope.launch(Dispatchers.IO) {
-            playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent ?: this@PlaybackSDKManager.userAgent)
+            playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent)
                 ?.catch { e ->
                     // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                     when (e) {
@@ -241,7 +238,6 @@ object PlaybackSDKManager {
     internal fun loadAllHLSStream(
         entryIDs: Array<String>,
         authorizationToken: String?,
-        userAgent: String?,
         completion: (Pair<Array<PlaybackResponseModel>?, Array<PlaybackAPIError>?>?, PlaybackAPIError?) -> Unit
     ) {
         var videoDetails: ArrayList<PlaybackResponseModel> = ArrayList()
@@ -256,7 +252,7 @@ object PlaybackSDKManager {
 
             val deferredList = entryIDs.map { entryId ->
                 async {
-                    playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent ?: this@PlaybackSDKManager.userAgent)
+                    playbackAPI?.getVideoDetails(entryId, authorizationToken, userAgent)
                         ?.catch { e ->
                             // Handle the PlaybackAPIError or any other Throwable as a PlaybackAPIError
                             when (e) {

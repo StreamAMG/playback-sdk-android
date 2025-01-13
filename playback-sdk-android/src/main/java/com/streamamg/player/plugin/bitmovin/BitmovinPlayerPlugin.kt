@@ -386,8 +386,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         if (entryId != null) {
             PlaybackSDKManager.loadHLSStream(
                 entryId,
-                authorizationToken,
-                null
+                authorizationToken
             ) { response, error ->
                 if (error != null) {
                     completion?.invoke(null)

@@ -27,7 +27,6 @@ object PlaybackUIView {
         authorizationToken: String?,
         entryId: String,
         analyticsViewerId: String?,
-        userAgent: String?,
         onError: ((PlaybackAPIError) -> Unit)?
     ) {
         var hasFetchedVideoDetails by remember { mutableStateOf(false) }
@@ -35,7 +34,7 @@ object PlaybackUIView {
         val context = LocalContext.current
 
         LaunchedEffect(entryId) {
-            PlaybackSDKManager.loadHLSStream(entryId, authorizationToken, userAgent) { details, error ->
+            PlaybackSDKManager.loadHLSStream(entryId, authorizationToken) { details, error ->
                 if (error != null) {
                     // Handle error
                     VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
@@ -77,7 +76,6 @@ object PlaybackUIView {
         entryIDToPlay: String?,
         authorizationToken: String?,
         analyticsViewerId: String?,
-        userAgent: String?,
         onErrors: ((Array<PlaybackAPIError>) -> Unit)?
     ) {
         var hasFetchedVideoDetails by remember { mutableStateOf(false) }
@@ -85,7 +83,7 @@ object PlaybackUIView {
         val context = LocalContext.current
 
         LaunchedEffect(entryIDToPlay) {
-            PlaybackSDKManager.loadAllHLSStream(entryIDs, authorizationToken, userAgent) { details, error ->
+            PlaybackSDKManager.loadAllHLSStream(entryIDs, authorizationToken) { details, error ->
 
                 if (error != null) {
                     // Handle error
