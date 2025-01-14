@@ -76,7 +76,6 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         }
     private val fullscreen = mutableStateOf(false)
     private var playerViewModel: VideoPlayerViewModel? = null
-    val mainScope = CoroutineScope(Job() + Dispatchers.Main)
 
     override fun setup(config: VideoPlayerConfig) {
         playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
