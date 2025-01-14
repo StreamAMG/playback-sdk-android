@@ -1,6 +1,9 @@
 package com.streamamg.player.plugin
 
 import androidx.compose.runtime.Composable
+import com.streamamg.api.player.PlaybackVideoDetails
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 /**
  * Interface defining the contract for a video player plugin.
@@ -25,6 +28,8 @@ interface VideoPlayerPlugin {
      */
     val version: String
 
+    val events: SharedFlow<Any>
+
     //endregion
 
     //region Public methods
@@ -36,10 +41,13 @@ interface VideoPlayerPlugin {
 
     /**
      * Renders the player view for the video player plugin.
-     * @param hlsUrl The HLS URL of the video to be played.
+     * @param videoDetails A list of video details to be played.
+     * @param entryIDToPlay The entryID to play at the beginning.
+     * @param authorizationToken Optional authorization token if required to fetch the video details.
+     * @param analyticsViewerId User identifier to be tracked in analytics.
      */
     @Composable
-    fun PlayerView(hlsUrl: String, analyticsViewerId: String?)
+    fun PlayerView(videoDetails: Array<PlaybackVideoDetails>, entryIDToPlay: String?, authorizationToken: String?, analyticsViewerId: String?)
 
     /**
      * Starts playback of the video.
@@ -50,6 +58,30 @@ interface VideoPlayerPlugin {
      * Pauses playback of the video.
      */
     fun pause()
+
+    /**
+     * Play next video of the Playlist.
+     */
+    fun playNext()
+
+    /**
+     * Play previous video of the Playlist.
+     */
+    fun playPrevious()
+
+    /**
+     * Play last video of the Playlist.
+     */
+    fun playLast()
+
+    /**
+     * Play first video of the Playlist.
+     */
+    fun playFirst()
+
+    fun seek(entryId: String, completion: (Boolean) -> Unit)
+
+    fun activeEntryId(): String?
 
     /**
      * Removes the player instance and cleans up resources.

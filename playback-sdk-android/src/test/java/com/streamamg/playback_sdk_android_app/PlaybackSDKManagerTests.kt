@@ -44,7 +44,7 @@ class PlaybackSDKManagerTests {
             assertNotNull(license)
             assertNull(error)
         }
-        manager.loadHLSStream(entryID, null, "userAgent") { hlsURL, error ->
+        manager.loadHLSStream(entryID, null) { hlsURL, error ->
             assertNotNull(hlsURL)
             assertNull(error)
         }

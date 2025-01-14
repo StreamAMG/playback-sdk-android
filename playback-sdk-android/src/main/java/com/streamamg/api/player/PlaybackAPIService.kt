@@ -65,6 +65,7 @@ internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val json = Json { ignoreUnknownKeys = true }
                     val responseModel = json.decodeFromString<PlaybackResponseModel>(responseText)
+                    responseModel.entryId = entryId
                     emit(responseModel)
                 } else {
                     val json = Json { ignoreUnknownKeys = true }

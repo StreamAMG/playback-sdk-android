@@ -10,7 +10,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.3.1")
+        classpath("com.android.tools.build:gradle:8.7.3")
     }
 }
 
@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.streamamg"
-version = "1.0.6"
+version = "1.1.0"
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
