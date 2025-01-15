@@ -124,9 +124,78 @@ To load the player UI in your application, use the `loadPlayer` method of the `P
 Example:
 
 ```kotlin
-PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error -> 
-    // Handle player UI error 
-} 
+PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error ->
+    // Handle player UI error
+}
+```
+
+## Loading a Playlist
+
+To load a sequential list of videos into the player UI, use the `loadPlaylist` method of the `PlaybackSDKManager` singleton object. This method is a Composable function that you can use to load and render the player UI.
+`entryIDs`: An array of Strings containing the unique identifiers of all the videos in the playlist.
+`entryIDToPlay`: (Optional) Specifies the unique video identifier that will be played first in the playlist. If not provided, the first video in the `entryIDs` array will be played.
+
+Example:
+
+```kotlin
+PlaybackSDKManager.loadPlaylist(
+    entryIDs,
+    entryIDToPlay
+) { errors ->
+    // Handle player UI playlist errors
+}
+```
+
+### Controlling Playlist Playback
+
+To control playlist playback, you can access to the VideoPlayerPluginManager singleton instance. This allows you to access various control functions and retrieve information about the current playback state.
+
+Here are some of the key functions you can utilize:
+
+`playFirst()`: Plays the first video in the playlist.
+`playPrevious()`: Plays the previous video in the playlist.
+`playNext()`: Plays the next video in the playlist.
+`playLast()`: Plays the last video in the playlist.
+`seek(entryIdToSeek)`: Seek a specific video Id
+`activeEntryId()`: Returns the unique identifier of the currently playing video.
+
+By effectively leveraging these functions, you can create dynamic and interactive video player experiences.
+
+Example:
+
+```kotlin
+// You can use the following playlist controls
+VideoPlayerPluginManager.getSelectedPlugin()?.playFirst() // Play the first video
+VideoPlayerPluginManager.getSelectedPlugin()?.playPrevious() // Play the previous video
+VideoPlayerPluginManager.getSelectedPlugin()?.playNext() // Play the next video
+VideoPlayerPluginManager.getSelectedPlugin()?.playLast() // Play the last video
+VideoPlayerPluginManager.getSelectedPlugin()?.seek(entryIdToSeek) { success -> // Seek a specific video
+    if (!success) {
+        val errorMessage = "Unable to seek video Id $newEntryId"
+    }
+}
+VideoPlayerPluginManager.getSelectedPlugin()?.activeEntryId() // Get the active video Id
+```
+
+### Receiving Playlist Events
+
+To receive playlist events, you can access to the VideoPlayerPluginManager singleton instance, similar to how you did in the Controlling Playlist Playback section.
+Utilize the SharedFlow `events` to listen for player events, such as the `PlaylistTransition` event. This event provides information about the transition from one video to another.
+
+Example:
+
+```kotlin
+VideoPlayerPluginManager.getSelectedPlugin()?.events?.collect { event ->
+   // Handle the event and update UI
+   when (event) {
+      is PlayerEvent.PlaylistTransition -> {
+         Log.d("Playback", "Playlist transition ${event.from.config.metadata?.get("entryId")} -> ${event.to.config.metadata?.get("entryId")}")
+      }
+      is PlayerEvent.Ready -> {
+         // Player is ready
+      }
+   }
+}
 ```
 
 ## Playing Access-Controlled Content
@@ -139,7 +208,7 @@ To play on-demand and live videos that require authorization, at some point befo
 
 Then the same token should be passed into the `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
 
-> \[NOTE]
+> \[!NOTE]
 > If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
 
 ## Configure user-agent
@@ -153,9 +222,9 @@ PlaybackSDKManager.initialize(
     apiKey = apiKey,
     baseUrl = baseUrl,
     userAgent = customUserAgent
-) { error -> 
-    // Handle player UI error 
-} 
+) { error ->
+    // Handle player UI error
+}
 ```
 
 ## Playing Free Content
@@ -210,32 +279,18 @@ To track analytics while utilizing the playlist functionality, you can provide t
 Below is an example implementation in Kotlin using the Playback SDK:
 
 ```kotlin
-    var videoDetails: Array<PlaybackVideoDetails> by remember { mutableStateOf(arrayOf("ENTRY_ID1", "ENTRY_ID_2", "ENTRY_ID_3")) }
-    val entryIDToPlay = "ENTRY_ID_2" // Optional parameter
-    val authorizationToken = "JWT_TOKEN"
-    val analyticsViewerId = "user id or empty string"
+   var entryIDs: Array<String> by remember { mutableStateOf(arrayOf("ENTRY_ID1", "ENTRY_ID_2", "ENTRY_ID_3")) }
+   val entryIDToPlay = "ENTRY_ID_2" // Optional parameter
+   val authorizationToken = "JWT_TOKEN"
+   val analyticsViewerId = "user id or empty string"
 
-   PlaybackSDKManager.loadAllHLSStream(entryIDs, authorizationToken, analyticsViewerId) { details, error ->
-   
-      if (error != null) {
-         // Handle error
-         VideoPlayerPluginManager.selectedPlugin?.let { plugin ->
-            (plugin as? LifecycleCleaner)?.clean(context)
-         }
-         onErrors?.invoke(arrayOf(error))
-      } else {
-         if (details?.first?.isEmpty() == false) {
-            for (detail in details.first!!) {
-               detail.toVideoDetails()?.let { videoDetail ->
-                  videoDetails += videoDetail
-               }
-            }
-            hasFetchedVideoDetails = true
-            if (details.second?.isNotEmpty() == true) {
-               onErrors?.invoke(details.second!!)
-            }
-         }
-      }
+   PlaybackSDKManager.loadPlaylist(
+      entryIDs,
+      entryIDToPlay, 
+      authorizationToken, 
+      analyticsViewerId
+   ) { errors ->
+      // Handle player UI playlist errors
    }
 ```
 
