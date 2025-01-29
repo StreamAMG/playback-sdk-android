@@ -17,7 +17,8 @@ internal data class PlaybackResponseModel(
     val media: Media? = null,
     val playFrom: Int? = null,
     val adverts: List<Advert>? = null,
-    val coverImg: CoverImages? = null
+    val coverImg: CoverImages? = null,
+    var entryId: String? = null
 ) {
     @Serializable
     data class Media(
@@ -44,4 +45,17 @@ internal data class PlaybackResponseModel(
         @SerialName("720") val _720: String? = null, // Use String instead of URL directly
         @SerialName("1080") val _1080: String? = null // Use String instead of URL directly
     )
+}
+
+internal fun PlaybackResponseModel.toVideoDetails(): PlaybackVideoDetails? {
+    this.entryId?.let { entryId ->
+        return PlaybackVideoDetails(
+            videoId = entryId,
+            url = this.media?.hls,
+            title = this.name,
+            thumbnail = this.coverImg?._360,
+            description = this.description
+        )
+    }
+    return null
 }

@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -28,16 +27,28 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.bitmovin.analytics.api.AnalyticsConfig
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
-import com.bitmovin.player.api.PlayerConfig
+import com.bitmovin.player.api.event.PlayerEvent
+import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.ui.FullscreenHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.streamamg.PlaybackSDKManager
+import com.streamamg.api.player.PlaybackVideoDetails
+import com.streamamg.api.player.toVideoDetails
 import com.streamamg.player.plugin.VideoPlayerConfig
 import com.streamamg.player.plugin.VideoPlayerPlugin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.channels.awaitClose
 
 
 internal interface FullscreenListener {
@@ -45,15 +56,24 @@ internal interface FullscreenListener {
     fun exitFullscreen()
 }
 
-class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
+class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     private var playerView: PlayerView? = null
     override val name: String = "Bitmovin"
     override val version: String = "1.0"
+    private val _eventFlow = MutableSharedFlow<Any>()
+    override val events = _eventFlow.asSharedFlow()
+    private var isListenerActive = true
 
-    private var hlsUrl: String = ""
+    private var videoDetails: Array<PlaybackVideoDetails>? = null
     private var analyticsViewerId: String? = null
     private var playerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                listenToPlayerEvents()
+            }
+        }
     private val fullscreen = mutableStateOf(false)
     private var playerViewModel: VideoPlayerViewModel? = null
 
@@ -64,10 +84,11 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         playerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
     }
 
-
-
     @Composable
-    override fun PlayerView(hlsUrl: String, analyticsViewerId: String?): Unit {
+    override fun PlayerView(videoDetails: Array<PlaybackVideoDetails>,
+                            entryIDToPlay: String?,
+                            authorizationToken: String?,
+                            analyticsViewerId: String?) {
         val context = LocalContext.current
         val isJetpackCompose = when (context) {
             is ComponentActivity -> true
@@ -80,9 +101,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         } ?: viewModel()
 
         this.analyticsViewerId = analyticsViewerId
-        this.hlsUrl = hlsUrl
+        this.videoDetails = videoDetails
         val currentLifecycle = LocalLifecycleOwner.current
-        val lastHlsUrl = remember { mutableStateOf(hlsUrl) }
         val configuration = LocalConfiguration.current
 
 
@@ -96,8 +116,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
             }
         }
 
-        DisposableEffect(hlsUrl) {
-            playerViewModel?.initializePlayer(context, playerConfig, hlsUrl, analyticsViewerId)
+        DisposableEffect(videoDetails) {
+            playerViewModel?.initializePlayer(context, playerConfig, videoDetails, entryIDToPlay, authorizationToken, analyticsViewerId)
             playerBind = playerViewModel?.player
             onDispose {
                 if (isJetpackCompose) {
@@ -110,8 +130,8 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
 
         val isReady = playerViewModel?.isPlayerReady?.collectAsState()
 
-        key(lastHlsUrl.value) {
-            // Force recomposition when the HLS URL changes
+        key(videoDetails) {
+            // Force recomposition when the video details list changes
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
@@ -176,6 +196,32 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         }
     }
 
+    private fun listenToPlayerEvents() {
+        CoroutineScope(Dispatchers.Main).launch {
+            callbackFlow {
+                playerBind?.on(PlayerEvent.Ready::class.java) { event ->
+                    if (isListenerActive) {
+                        trySend(event)
+                    }
+                }
+
+                playerBind?.on(PlayerEvent.PlaylistTransition::class.java) { event ->
+                    if (isListenerActive) {
+                        trySend(event)
+                    }
+                }
+
+                awaitClose {
+                    isListenerActive = false
+                }
+            }.collect { event ->
+                withContext(Dispatchers.Main) {
+                    _eventFlow.emit(event)
+                }
+            }
+        }
+    }
+
     @Composable
     fun LockScreenOrientation(orientation: Int) {
         val context = LocalContext.current
@@ -234,6 +280,128 @@ class BitmovinVideoPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
 
     override fun pause() {
         playerBind?.pause()
+    }
+
+    override fun playNext() {
+        playerBind?.playlist?.sources?.let { sources ->
+            val index = sources.indexOfFirst { it.isActive }
+            if (index != -1) {
+                val nextIndex = index.plus(1)
+                if (nextIndex < sources.size) {
+                    val nextSource = sources[nextIndex]
+                    seekSource(nextSource)
+                }
+            }
+        }
+    }
+
+    override fun playPrevious() {
+        playerBind?.playlist?.sources?.let { sources ->
+            val index = sources.indexOfFirst { it.isActive }
+            if (index > 0) {
+                val nextIndex = index.minus(1)
+                val prevSource = sources[nextIndex]
+                seekSource(prevSource)
+            }
+        }
+    }
+
+    override fun playLast() {
+        playerBind?.playlist?.sources?.last()?.let { lastSource ->
+            seekSource(lastSource)
+        }
+    }
+
+    override fun playFirst() {
+        playerBind?.playlist?.sources?.first()?.let { firstSource ->
+            seekSource(firstSource)
+        }
+    }
+
+    override fun seek(entryId: String, completion: (Boolean) -> Unit) {
+        playerBind?.playlist?.sources?.let { sources ->
+            val index = sources.indexOfFirst {
+                it.config.metadata?.get("entryId") == entryId
+            }
+            if (index != -1) {
+                seekSource(sources[index]) {
+                    completion(it)
+                }
+            } else {
+                completion(false)
+            }
+        } ?: {
+            completion(false)
+        }
+    }
+
+    override fun activeEntryId(): String? {
+        activeSource()?.let { source ->
+            return source.config.metadata?.get("entryId")
+        }
+
+        return null
+    }
+
+    private fun activeSource(): Source? {
+        playerBind?.playlist?.sources?.let { sources ->
+            val index = sources.indexOfFirst { it.isActive }
+            if (index != -1) {
+                return sources[index]
+            }
+        }
+
+        return null
+    }
+
+    private fun seekSource(source: Source, completion: ((Boolean) -> Unit)? = null) {
+        playerBind?.playlist?.sources?.let { sources ->
+            val index = sources.indexOfFirst { it.config.metadata?.get("entryId") == source.config.metadata?.get("entryId") }
+            if (index != -1) {
+                updateSource(sources[index]) { updatedSource ->
+                    if (updatedSource != null) {
+                        CoroutineScope(Job() + Dispatchers.IO).launch {
+                            withContext(Dispatchers.Main) {
+                                playerBind?.playlist?.remove(index)
+                                playerBind?.playlist?.add(updatedSource, index)
+                                playerBind?.playlist?.seek(updatedSource, 0.0)
+                            }
+                        }
+                        completion?.invoke(true)
+                    } else {
+                        completion?.invoke(false)
+                    }
+                }
+            } else {
+                completion?.invoke(false)
+            }
+        }
+    }
+
+    private fun updateSource(source: Source, completion: ((Source?) -> Unit)? = null) {
+        val entryId = source.config.metadata?.get("entryId")
+        val authorizationToken = source.config.metadata?.get("authorizationToken")
+        
+        if (entryId != null) {
+            PlaybackSDKManager.loadHLSStream(
+                entryId,
+                authorizationToken
+            ) { response, error ->
+                if (error != null) {
+                    completion?.invoke(null)
+                } else {
+                    val videoDetails = response?.toVideoDetails()
+                    if (response != null && videoDetails != null) {
+                        val newSource = PlaybackSDKManager.createSource(videoDetails, authorizationToken)
+                        completion?.invoke(newSource)
+                    } else {
+                        completion?.invoke(null)
+                    }
+                }
+            }
+        } else {
+            completion?.invoke(null)
+        }
     }
 
     override fun removePlayer() {
