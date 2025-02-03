@@ -114,6 +114,7 @@ Example:
         // Register default layer plugin 
         val customPlugin = BitmovinVideoPlayerPlugin()
         VideoPlayerPluginManager.registerPlugin(customPlugin)
+        // Handle error as SDKError
     }
 ```
 **Error Handling:** For information on handling potential errors during initialization, see the [Error Handling](#error-handling) section.
@@ -127,7 +128,7 @@ Example:
 
 ```kotlin
 PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error ->
-    // Handle player UI error
+    // Handle player UI error as PlaybackAPIError
 }
 ```
 **Error Handling:** For information on handling potential errors during player loading, see the [Error Handling](#error-handling) section.
@@ -145,7 +146,7 @@ PlaybackSDKManager.loadPlaylist(
     entryIDs,
     entryIDToPlay
 ) { errors ->
-    // Handle player UI playlist errors
+    // Handle player UI playlist errors as Array<PlaybackAPIError>
 }
 ```
 **Error Handling:** For information on handling potential errors during playlist loading, see the [Error Handling](#error-handling) section.
@@ -210,10 +211,16 @@ To play on-demand and live videos that require authorization, at some point befo
 "$baseURL/sso/start?token=$authorizationToken"
 ```
 
-Then the same token should be passed into the `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
+Then the same token should be passed into the `loadPlaylist` or `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
 
 > \[!NOTE]
 > If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
+
+## Playing Free Content
+
+If you want to allow users to access free content or if you're implementing a guest mode, you can pass an empty string or `null`
+value as the `authorizationToken` parameter when calling the `loadPlayer` or `loadPlaylist` function. This will bypass the need for authentication, enabling unrestricted access to the specified content.
+
 
 ## Configure user-agent
 
@@ -227,32 +234,28 @@ PlaybackSDKManager.initialize(
     baseUrl = baseUrl,
     userAgent = customUserAgent
 ) { error ->
-    // Handle player UI error
+    // Handle player UI error as SDKError
 }
 ```
-
-## Playing Free Content
-
-If you want to allow users to access free content or if you're implementing a guest mode, you can pass an empty string or `null`
-value as the `authorizationToken` parameter when calling the `loadPlayer` function. This will bypass the need for authentication, enabling unrestricted access to the specified content.
 
 ## Error Handling
 
 The `PlaybackSDKManager` provides error handling through sealed classes `SDKError` and `PlaybackAPIError`. These classes represent various errors that can occur during SDK and API operations respectively.
 
-- `SDKError` includes subclasses for initialization errors, missing license, and HLS stream loading errors.
-  - **`InitializationError`:** General SDK initialization failure. Occurs with configuration issues or internal problems.
-  - **`MissingLicense`:** No valid license found. Occurs if no license key is provided or the key is invalid/expired.
-  - **`FetchBitmovinLicenseError`:** Failed to fetch the Bitmovin license. Occurs with network issues or problems with the Bitmovin license server.
-- `PlaybackAPIError` includes subclasses for initialization errors, network errors, and API errors.
-  - **`InitializationError`:** Player initialization failure. Occurs with configuration issues, invalid entry ID, or system resource problems.
-  - **`NetworkError`:** Network connectivity issue during playback. Occurs when the device loses connection or there are network infrastructure problems.
-  - **`ApiError`:** External API error. Occurs with authentication failures, resource unavailability, or other API-specific issues.
+- **`SDKError`** includes subclasses for initialization errors, missing license, and HLS stream loading errors.
+  - `InitializationError` : General SDK initialization failure. Occurs with configuration issues or internal problems.
+  - `MissingLicense` : No valid license found. Occurs if no license key is provided or the key is invalid/expired.
+  - `FetchBitmovinLicenseError` : Failed to fetch the Bitmovin license. Occurs with network issues or problems with the Bitmovin license server.
+  
+- **`PlaybackAPIError`** includes subclasses for initialization errors, network errors, and API errors.
+  - `InitializationError` : Player initialization failure. Occurs with configuration issues, invalid entry ID, or system resource problems.
+  - `NetworkError` : Network connectivity issue during playback. Occurs when the device loses connection or there are network infrastructure problems.
+  - `ApiError` : External API error. Occurs with authentication failures, resource unavailability, or other API-specific issues.
     
 ### ApiError Details
-   -   **`code`:** API error code (integer).
-   -   **`message`:** Error description.
-   -   **`data`:** Optional additional data.
+  - `code` : API error code (integer).
+  - `message` : Error description.
+  - `data` : Optional additional data.
 
 ### Common ApiError Codes
 
@@ -293,7 +296,7 @@ Currently SDK support tracking analytics on Bitmovin service. In case you have a
         authorizationToken = "..."
         viewerAnalyticsId = "user id or empty string"
         PlaybackSDKManager.loadPlayer(entryId, authorizationToken, viewerAnalyticsId) { error ->
-            onPlayerError(error)
+            onPlayerError(error) // Handle error as PlaybackAPIError
         }
     }
 ```
@@ -315,11 +318,12 @@ Below is an example implementation in Kotlin using the Playback SDK:
       authorizationToken, 
       analyticsViewerId
    ) { errors ->
-      // Handle player UI playlist errors
+      // Handle player UI playlist errors as Array<PlaybackAPIError>
    }
 ```
 
 ## Resources
 
-- **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
 - **Demo app:** [GitHub Repository](https://github.com/StreamAMG/playback-demo-android)
+- **Stoplight API documentation:** [Documentation](https://streamamg.stoplight.io/docs/playback-sdk-android/)
+- **Tutorial (deprecated):** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
