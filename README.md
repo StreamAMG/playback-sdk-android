@@ -298,7 +298,6 @@ PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error ->
                 PlaybackErrorReason.notAuthenticated -> {
                     errorMessage = "User is not authenticated."
                 }
-                ...
                 else -> {}
             }
         }
