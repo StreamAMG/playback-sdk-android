@@ -211,7 +211,7 @@ To play on-demand and live videos that require authorization, at some point befo
 "$baseURL/sso/start?token=$authorizationToken"
 ```
 
-Then the same token should be passed into the `loadPlaylist` or `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDkManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
+Then the same token should be passed into the `loadPlaylist` or `loadPlayer(entryID, authorizationToken, onError)` method of `PlaybackSDKManager`. For the free videos that user should be able to watch without logging in, starting the session is not required and `authorizationToken` can be set to an empty string or `null`.
 
 > \[!NOTE]
 > If the user is authenticated, has enough access level to watch a video, the session was started and the same token was passed to the player but the videos still throw a 401 error, it might be related to these requests having different user-agent headers.
@@ -255,19 +255,65 @@ The `PlaybackSDKManager` provides error handling through sealed classes `SDKErro
 ### ApiError Details
   - `code` : API error code (integer).
   - `message` : Error description.
-  - `data` : Optional additional data.
+  - `reason` : Specific error classification from `PlaybackErrorReason`:
+     - `headerError`: Invalid or missing request headers
+     - `badRequestError`: Malformed request syntax
+     - `siteNotFound`: Requested site resource doesn't exist
+     - `configurationError`: Invalid backend configuration
+     - `apiKeyError`: Invalid or missing API key
+     - `mpPartnerError`: Partner-specific validation failure
+     - `tokenError`: Invalid or expired authentication token
+     - `tooManyDevices`: Device limit exceeded for account
+     - `tooManyRequests`: Rate limit exceeded
+     - `noEntitlement`: User lacks content access rights
+     - `noSubscription`: No active subscription found
+     - `noActiveSession`: Valid viewing session not found
+     - `notAuthenticated`: General authentication failure
+     - `noEntityExist`: Requested resource doesn't exist
+     - `unknown`: Unclassified error
 
 ### Common ApiError Codes
 
- Code | Message                | Description                                                                   |
- ---- |------------------------|-------------------------------------------------------------------------------|
- 400  | Bad Request            | The request sent to the API was invalid or malformed.                         |
- 401  | Unauthorized           | The user is not authenticated or authorized to access the requested resource. |
- 403  | Forbidden              | The user is not allowed to access the requested resource.                     |
- 404  | Not Found              | The requested resource was not found on the server.                           |
- 500  | Internal Server Error  | An unexpected error occurred on the server.                                   |
+ Code | Message               | Description                                                                   | Reasons
+ ---- |-----------------------|-------------------------------------------------------------------------------|------------
+ 400  | Bad Request           | The request sent to the API was invalid or malformed.                         | headerError, badRequestError, siteNotFound, apiKeyError, mpPartnerError, configurationError
+ 401  | Unauthorized          | The user is not authenticated or authorized to access the requested resource. | tokenError, tooManyDevices, tooManyRequests, noEntitlement, noSubscription, notAuthenticated, mpPartnerError, configurationError, noActiveSession
+ 403  | Forbidden             | The user is not allowed to access the requested resource.                     |
+ 404  | Not Found             | The requested resource was not found on the server.                           | noEntityExist
+ 440  | Login Time-out        | Login session expired due to inactivity.                                      | noActiveSession
+ 500  | Internal Server Error | An unexpected error occurred on the server.                                   |
 
 Handle errors based on these classes to provide appropriate feedback to users.
+
+### Error Handling Example
+
+```kotlin
+PlaybackSDKManager.loadPlayer(entryID, authorizationToken) { error ->
+    when (error) {
+        is PlaybackAPIError.ApiError -> {
+            when (error.reason) {
+                PlaybackErrorReason.noEntitlement -> {
+                    errorMessage = "User lacks content access rights."
+                }
+                PlaybackErrorReason.notAuthenticated -> {
+                    errorMessage = "User is not authenticated."
+                }
+                ...
+                else -> {}
+            }
+        }
+        is PlaybackAPIError.NetworkError -> {
+            errorMessage = "Network issue: ${error.error.localizedMessage}"
+        }
+        is PlaybackAPIError.InitializationError -> {
+            errorMessage = "Initialization failed."
+        }
+        else -> {
+            errorMessage = "An unknown error occurred."
+        }
+    }
+}
+```
 
 ## Video Player Plugin Manager
 
