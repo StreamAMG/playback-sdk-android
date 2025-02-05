@@ -19,44 +19,44 @@ To integrate the `PlaybackSDKManager` into your Android application, follow thes
 
 1. Add a link to Jitpack and Bitmovin release repository to your application's `settings.gradle.kts` file:
 
-   ```groovy
-   dependencyResolutionManagement {
-       repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-       repositories {
-           google()
-           mavenCentral()
-           maven {
-               url = uri("https://artifacts.bitmovin.com/artifactory/public-releases")
-           }
-           maven {
-               url = uri("https://jitpack.io")
-           }
+```groovy
+dependencyResolutionManagement {
+   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+   repositories {
+       google()
+       mavenCentral()
+       maven {
+           url = uri("https://artifacts.bitmovin.com/artifactory/public-releases")
+       }
+       maven {
+           url = uri("https://jitpack.io")
        }
    }
-   ```
+}
+```
 
 2. Add the following dependency to your app `build.gradle.kts` file:
 
-   ```groovy
-   dependencies {
-       ...
-       implementation 'com.github.StreamAMG:playback-sdk-android:x.x.x'
-       implementation 'com.bitmovin.player:player:x.x.x'
-   }
-   ```
+```groovy
+dependencies {
+   ...
+   implementation 'com.github.StreamAMG:playback-sdk-android:x.x.x'
+   implementation 'com.bitmovin.player:player:x.x.x'
+}
+```
 
-   - This is the latest version of the Playback SDK [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
-   - You can check the latest Bitmovin player version [HERE](https://developer.bitmovin.com/playback/docs/release-notes-android)
+- This is the latest version of the Playback SDK [![](https://jitpack.io/v/StreamAMG/playback-sdk-android.svg)](https://jitpack.io/#StreamAMG/playback-sdk-android)
+- You can check the latest Bitmovin player version [HERE](https://developer.bitmovin.com/playback/docs/release-notes-android)
 
 3. Add the following plugins on your project `build.gradle.kts` file:
 
-   ```groovy
-   plugins {
-       ...
-       id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
-       id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
-   }
-   ```
+```groovy
+plugins {
+   ...
+   id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
+   id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
+}
+```
 
 4. Sync your project to ensure the new dependency is downloaded and added to your project.
 
@@ -66,35 +66,35 @@ If you want to debug and integrate Playback SDK from your local path, follow the
 
 1. Add the path of the local SDK to your application's `settings.gradle.kts` file:
 
-   ```groovy
-   include(":app")
-   include (":playback-sdk-android")
-   project(":playback-sdk-android").projectDir = File("../playback-sdk-android/playback-sdk-android")
-   ```
+```groovy
+include(":app")
+include (":playback-sdk-android")
+project(":playback-sdk-android").projectDir = File("../playback-sdk-android/playback-sdk-android")
+```
 
-   Change the File path based on your local SDK path
+Change the File path based on your local SDK path
 
 2. Add the following dependency to your app `build.gradle.kts` file:
 
-   ```groovy
-   dependencies {
-       ...
-       implementation(project(":playback-sdk-android"))
-       implementation 'com.bitmovin.player:player:x.x.x'
-   }
-   ```
+```groovy
+dependencies {
+   ...
+   implementation(project(":playback-sdk-android"))
+   implementation 'com.bitmovin.player:player:x.x.x'
+}
+```
 
-   - You can check the latest Bitmovin player version [HERE](https://developer.bitmovin.com/playback/docs/release-notes-android)
+- You can check the latest Bitmovin player version [HERE](https://developer.bitmovin.com/playback/docs/release-notes-android)
 
 3. Add the following plugins on your project `build.gradle.kts` file:
 
-   ```groovy
-   plugins {
-       ...
-       id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
-       id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
-   }
-   ```
+```groovy
+plugins {
+   ...
+   id("org.jetbrains.kotlin.jvm") version "1.9.0" apply false
+   id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10" apply true
+}
+```
 
 4. Sync your project to ensure the new dependency is downloaded and added to your project.
 
@@ -109,13 +109,13 @@ To initialize the playback SDK, use the `initialize` method of the `PlaybackSDKM
 Example:
 
 ```kotlin
-    // Initialize SDK with the settings
-    PlaybackSDKManager.initialize("<API_KEY>") { license, error ->
-        // Register default layer plugin 
-        val customPlugin = BitmovinVideoPlayerPlugin()
-        VideoPlayerPluginManager.registerPlugin(customPlugin)
-        // Handle error as SDKError
-    }
+// Initialize SDK with the settings
+PlaybackSDKManager.initialize("<API_KEY>") { license, error ->
+    // Register default layer plugin 
+    val customPlugin = BitmovinVideoPlayerPlugin()
+    VideoPlayerPluginManager.registerPlugin(customPlugin)
+    // Handle error as SDKError
+}
 ```
 **Error Handling:** For information on handling potential errors during initialization, see the [Error Handling](#error-handling) section.
 
@@ -325,25 +325,25 @@ For further details on how to use the `VideoPlayerPluginManager`, refer to the i
 To use the Google Chromecast support, use the `updateCastContext` method of the `PlaybackSDKManager` singleton object, passing the context of the Activity otherwise the Casting will be disabled. Each Activity that uses Cast related API's has to call the following function before using any cast related API, e.g. in the `Activity.onCreate` function:
 
 ```kotlin
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        PlaybackSDKManager.updateCastContext(this)
-        ...
-    }
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    PlaybackSDKManager.updateCastContext(this)
+    ...
+}
 ```
 ## Bitmovin analytics
 
 Currently SDK support tracking analytics on Bitmovin service. In case you have a logged-in user and want to track Bitmovin analytics for the current session, you need to pass the user's ID in the `analyticsViewerId` parameter.
 
 ```kotlin
-    setContent {
-        entryId = "..."
-        authorizationToken = "..."
-        viewerAnalyticsId = "user id or empty string"
-        PlaybackSDKManager.loadPlayer(entryId, authorizationToken, viewerAnalyticsId) { error ->
-            onPlayerError(error) // Handle error as PlaybackAPIError
-        }
+setContent {
+    entryId = "..."
+    authorizationToken = "..."
+    viewerAnalyticsId = "user id or empty string"
+    PlaybackSDKManager.loadPlayer(entryId, authorizationToken, viewerAnalyticsId) { error ->
+        onPlayerError(error) // Handle error as PlaybackAPIError
     }
+}
 ```
 
 ## Playlist and Analytics
@@ -352,19 +352,19 @@ To track analytics while utilizing the playlist functionality, you can provide t
 Below is an example implementation in Kotlin using the Playback SDK:
 
 ```kotlin
-   var entryIDs: Array<String> by remember { mutableStateOf(arrayOf("ENTRY_ID1", "ENTRY_ID_2", "ENTRY_ID_3")) }
-   val entryIDToPlay = "ENTRY_ID_2" // Optional parameter
-   val authorizationToken = "JWT_TOKEN"
-   val analyticsViewerId = "user id or empty string"
+var entryIDs: Array<String> by remember { mutableStateOf(arrayOf("ENTRY_ID1", "ENTRY_ID_2", "ENTRY_ID_3")) }
+val entryIDToPlay = "ENTRY_ID_2" // Optional parameter
+val authorizationToken = "JWT_TOKEN"
+val analyticsViewerId = "user id or empty string"
 
-   PlaybackSDKManager.loadPlaylist(
-      entryIDs,
-      entryIDToPlay, 
-      authorizationToken, 
-      analyticsViewerId
-   ) { errors ->
-      // Handle player UI playlist errors as Array<PlaybackAPIError>
-   }
+PlaybackSDKManager.loadPlaylist(
+  entryIDs,
+  entryIDToPlay, 
+  authorizationToken, 
+  analyticsViewerId
+) { errors ->
+  // Handle player UI playlist errors as Array<PlaybackAPIError>
+}
 ```
 
 ## Resources
