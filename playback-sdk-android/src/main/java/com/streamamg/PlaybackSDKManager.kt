@@ -5,6 +5,9 @@ import PlayerInformationAPIService
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.Composable
+import com.bitmovin.analytics.api.CustomData
+import com.bitmovin.analytics.api.SourceMetadata
+import com.bitmovin.player.api.analytics.AnalyticsSourceConfig
 import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
 import com.bitmovin.player.casting.BitmovinCastManager
@@ -306,7 +309,15 @@ object PlaybackSDKManager {
         }
         sourceConfig.metadata = metadata
 
-        return Source(sourceConfig)
+        val sourceMetadata = SourceMetadata(
+            title = details.title,
+            videoId = details.videoId,
+            customData = CustomData(
+                customData1 = details.description
+            )
+        )
+
+        return Source(sourceConfig, AnalyticsSourceConfig.Enabled(sourceMetadata))
     }
 
     //endregion
