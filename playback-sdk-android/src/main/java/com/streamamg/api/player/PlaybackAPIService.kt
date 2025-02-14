@@ -1,6 +1,7 @@
 package com.streamamg.api.player
 
 import com.streamamg.PlaybackAPIError
+import com.streamamg.PlaybackErrorReason
 import com.streamamg.PlaybackSDKManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -79,7 +80,7 @@ internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
                     throw PlaybackAPIError.apiError(
                         responseCode,
                         errorMessage,
-                        errorResponse.message ?: "Reason not available in this context."
+                        errorResponse.reason ?: "unknown"
                     )
                 }
             } catch (e: IOException) {
@@ -90,7 +91,7 @@ internal class PlaybackAPIService(private val apiKey: String) : PlaybackAPI {
         } ?: throw PlaybackAPIError.ApiError(
             0,
             "Unable to open connection",
-            "No connection established"
+            PlaybackErrorReason.unknown
         )
     }
 }
