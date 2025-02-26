@@ -221,7 +221,7 @@ object PlaybackSDKManager {
                         completion(videoDetails, null)
                     } else {
                         // No video details found in the response
-                        completion(null, PlaybackAPIError.ApiError(0, "Video details not available", "No Video details found in the response"))
+                        completion(null, PlaybackAPIError.ApiError(0, "Video details not available", PlaybackErrorReason.unknown))
                     }
                 }
         }
@@ -269,7 +269,7 @@ object PlaybackSDKManager {
                                 videoDetails.add(videoDetail)
                             } else {
                                 // No video details found in the response
-                                playbackErrors.add(PlaybackAPIError.ApiError(0, "Video details not available", "No Video details found in the response"))
+                                playbackErrors.add(PlaybackAPIError.ApiError(0, "Video details not available", PlaybackErrorReason.unknown))
                             }
                         }
                 }
