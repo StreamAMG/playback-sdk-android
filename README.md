@@ -138,9 +138,10 @@ val playerConfig = VideoPlayerConfig()
 playerConfig.playbackConfig.autoplayEnabled = true
 playerConfig.playbackConfig.backgroundPlaybackEnabled = true
 playerConfig.playbackConfig.fullscreenRotationEnabled = true
-```
+
 // Apply playerConfig to your video player
 videoPlayer.setup(playerConfig)
+```
 
 ## Loading Player UI
 
