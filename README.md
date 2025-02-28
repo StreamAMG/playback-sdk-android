@@ -120,6 +120,32 @@ PlaybackSDKManager.initialize("<API_KEY>") { license, error ->
 **Error Handling:** For information on handling potential errors during initialization, see the [Error Handling](#error-handling) section.
 
 
+# Video Player Configuration
+
+This snippet demonstrates how to configure a video player using the `VideoPlayerConfig` object in Kotlin.
+
+## Configuration Options
+
+The provided example sets the following playback configurations:
+
+* **`autoplayEnabled = true`**: Enables automatic playback of the video when it is loaded.
+* **`backgroundPlaybackEnabled = true`**: Allows the video to continue playing even when the application is in the background.
+* **`fullscreenRotationEnabled = true`**: Enables automatic screen rotation when the video is in fullscreen mode. If set to `false`, the fullscreen button may be disabled or the fullscreen functionality will be restricted, preventing screen rotation.
+
+## Usage
+
+To utilize these configurations, create a `VideoPlayerConfig` instance and modify the desired properties within the `playbackConfig` object. Then, apply this configuration to your video player implementation.
+
+```kotlin
+val playerConfig = VideoPlayerConfig()
+playerConfig.playbackConfig.autoplayEnabled = true
+playerConfig.playbackConfig.backgroundPlaybackEnabled = true
+playerConfig.playbackConfig.fullscreenRotationEnabled = true
+
+// Apply playerConfig to your video player
+videoPlayer.setup(playerConfig)
+```
+
 ## Loading Player UI
 
 To load the player UI in your application, use the `loadPlayer` method of the `PlaybackSDKManager` singleton object. This method is a Composable function that you can use to load and render the player UI.
