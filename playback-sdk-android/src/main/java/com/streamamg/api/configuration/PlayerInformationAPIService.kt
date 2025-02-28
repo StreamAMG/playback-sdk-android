@@ -1,4 +1,5 @@
 import com.streamamg.PlaybackAPIError
+import com.streamamg.PlaybackSDKManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,7 @@ internal interface PlayerInformationAPI {
 
 internal class PlayerInformationAPIService(private val apiKey: String) : PlayerInformationAPI {
 
-    private val baseURL = "https://api.playback.streamamg.com/v1"
+    private val baseURL = PlaybackSDKManager.baseURL
     private val json = Json { ignoreUnknownKeys = true }
     override suspend fun getPlayerInformation(userAgent: String?): Flow<PlayerInformationResponseModel> {
         return flow {
