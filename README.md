@@ -294,6 +294,64 @@ Below is an example implementation in Kotlin using the Playback SDK:
    }
 ```
 
+## Workaround Player reset in Traditional UI (Activities & Fragments)
+
+When an Android device rotates, the Activity or Fragment is typically destroyed and recreated. This process involves:
+
+1.  **Configuration Change:** The system detects a configuration change (screen orientation).
+2.  **Activity/Fragment Destruction:** The current Activity or Fragment instance is destroyed.
+3.  **Activity/Fragment Recreation:** A new Activity or Fragment instance is created, and its lifecycle methods (e.g., `onCreate`) are called again.
+
+This recreation process can lead to the loss of UI state and resources, including your video player.
+
+To prevent the video player from being reloaded and restarted during rotation, we cache the `ComposeView` that contains it.
+
+```kotlin
+val composeView = ComposeView(mutableContext)
+composeView.apply {
+    setContent {
+        PlaybackSDKManager.loadPlayer(entryId, authorizationToken, settingsManager.viewerAnalyticsId) { error ->
+            lifecycleScope.launch {
+                onPlayerError(error)
+            }
+        }
+    }
+}
+PlayerViewCache.viewCache = composeView
+```
+
+Explanation:
+
+`ComposeView`: We create a ComposeView to host our Jetpack Compose UI, which includes the video player.
+`setContent`: We use setContent to load the video player using PlaybackSDKManager.loadPlayer.
+`PlayerViewCache.viewCache`: We store the ComposeView in a cache (PlayerViewCache) so it can be retrieved after rotation.
+
+# Restoring the Cached View During Rotation
+
+When the Activity or Fragment is recreated, we retrieve the cached `ComposeView` and reattach it to the appropriate layout.
+
+```kotlin
+PlayerViewCache.viewCache?.parent?.let { parent ->
+    (parent as? ViewGroup)?.removeView(PlayerViewCache.viewCache)
+}
+if (PlayerViewCache.isFullscreen) {
+    binding?.playerRoot?.addView(PlayerViewCache.viewCache)
+} else {
+    binding?.playerWrapper?.addView(PlayerViewCache.viewCache)
+}
+```
+
+Explanation:
+
+Removing from Parent: First, we check if the cached `ComposeView` already has a parent. If so, we remove it to prevent it from being attached to multiple views.
+Fullscreen Check: We check the `PlayerViewCache.isFullscreen` flag to determine if the player was in fullscreen mode before rotation.
+Adding to Layout:
+If `isFullscreen` is `true`, we add the cached `ComposeView` to `binding?.playerRoot`, which is the root view for fullscreen presentation.
+If `isFullscreen` is `false`, we add the cached `ComposeView` to `binding?.playerWrapper`, which is the view for normal presentation.
+`playerRoot` and `playerWrapper`
+`playerRoot`: This is the root ViewGroup of your Activity or Fragment's layout, used to display the video player in fullscreen mode.
+playerWrapper: This is a ViewGroup within your layout, specifically designed to hold the video player when it's not in fullscreen.
+
 ## Resources
 
 - **Tutorial:** [Tutorial](https://streamamg.github.io/playback-sdk-android/tutorials/playbacksdk/getstarted)
