@@ -294,7 +294,7 @@ Below is an example implementation in Kotlin using the Playback SDK:
    }
 ```
 
-## Workaround Player reset in Traditional UI (Activities & Fragments)
+## Handling Player State During Configuration Changes with Activities & Fragments (Traditional UI)
 
 When an Android device rotates, the Activity or Fragment is typically destroyed and recreated. This process involves:
 
