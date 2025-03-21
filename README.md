@@ -346,6 +346,27 @@ Additionally, the package includes a singleton object `VideoPlayerPluginManager`
 
 For further details on how to use the `VideoPlayerPluginManager`, refer to the inline documentation provided in the code.
 
+
+## Customizing Player Configuration
+
+The Playback SDK provides methods to access and update the PlayerConfig of the Bitmovin player. This allows you to customize various aspects of the player's behavior and appearance dynamically.
+
+To modify the player's configuration, you can use the following methods:
+- **`updatePlayerConfig(newConfig: PlayerConfig)`** : Updates the current player configuration with a new PlayerConfig object.
+- **`getPlayerConfig() : PlayerConfig`** : Retrieves the current player configuration.
+These methods enable you to adjust settings such as playback options, style configurations, and more, ensuring flexibility for your integration.
+
+Example: 
+
+```kotlin
+val bitmovinPlugin = BitmovinPlayerPlugin()
+val myPlayerConfig = bitmovinPlugin.getPlayerConfig()
+// Disable Default Player UI
+myPlayerConfig?.styleConfig?.isUiEnabled = false
+bitmovinPlugin.updatePlayerConfig(myPlayerConfig)
+```
+
+
 ## Chromecasting
 
 To use the Google Chromecast support, use the `updateCastContext` method of the `PlaybackSDKManager` singleton object, passing the context of the Activity otherwise the Casting will be disabled. Each Activity that uses Cast related API's has to call the following function before using any cast related API, e.g. in the `Activity.onCreate` function:

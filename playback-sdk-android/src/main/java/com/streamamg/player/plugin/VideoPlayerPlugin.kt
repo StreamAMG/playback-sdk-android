@@ -1,8 +1,8 @@
 package com.streamamg.player.plugin
 
 import androidx.compose.runtime.Composable
+import com.bitmovin.player.api.PlayerConfig
 import com.streamamg.api.player.PlaybackVideoDetails
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 
 /**
@@ -48,6 +48,14 @@ interface VideoPlayerPlugin {
      */
     @Composable
     fun PlayerView(videoDetails: Array<PlaybackVideoDetails>, entryIDToPlay: String?, authorizationToken: String?, analyticsViewerId: String?)
+
+    // Optional methods to update player configuration (Used for Bitmovin player only)
+    fun updatePlayerConfig(newConfig: PlayerConfig?) {
+    }
+
+    fun getPlayerConfig(): PlayerConfig? {
+        return null
+    }
 
     /**
      * Starts playback of the video.
