@@ -34,6 +34,7 @@ class VideoPlayerViewModel : ViewModel() {
     private var entryIDToPlay: String? = null
     private var authorizationToken: String? = null
     private var config: VideoPlayerConfig? = null
+    private var playerConfig: PlayerConfig? = null
     private var isServiceBound = false
     private var backgroundPlaybackEnabled = false
     private var autoplayEnabled = false
@@ -56,17 +57,32 @@ class VideoPlayerViewModel : ViewModel() {
         }
     }
 
-    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoDetails: Array<PlaybackVideoDetails>, entryIDToPlay: String?, authorizationToken: String?, analyticsViewerId: String? = null) {
+    fun initializePlayer(context: Context, config: VideoPlayerConfig, videoDetails: Array<PlaybackVideoDetails>, playerConfig: PlayerConfig?, entryIDToPlay: String?, authorizationToken: String?, analyticsViewerId: String? = null) {
         this.config = config
         backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         autoplayEnabled = config.playbackConfig.autoplayEnabled
         this.entryIDToPlay = entryIDToPlay
         this.authorizationToken = authorizationToken
         if (player == null) {
-            val playerConfig =
-                PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
+            playerConfig?.let {
+                this.playerConfig = PlayerConfig(
+                    key = PlaybackSDKManager.bitmovinLicense,
+                    styleConfig = it.styleConfig,
+                    playbackConfig = it.playbackConfig,
+                    licensingConfig = it.licensingConfig,
+                    advertisingConfig = it.advertisingConfig,
+                    remoteControlConfig = it.remoteControlConfig,
+                    adaptationConfig = it.adaptationConfig,
+                    networkConfig = it.networkConfig,
+                    liveConfig = it.liveConfig,
+                    tweaksConfig = it.tweaksConfig,
+                    bufferConfig = it.bufferConfig
+                    )
+            } ?: run {
+                this.playerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
+            }
             val analyticsConfig = provideAnalyticsConfig(PlaybackSDKManager.analyticsLicense, analyticsViewerId)
-            player = Player(context, playerConfig, analyticsConfig)
+            player = this.playerConfig?.let { Player(context, it, analyticsConfig) }
         }
         unbindFromService(context)
 
