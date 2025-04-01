@@ -163,7 +163,8 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
                             cssLocation = "file:///android_asset/bitmovinplayer-ui.min.css"
                         )
                     )
-                    playerView = PlayerView(context, playerViewModel?.player).apply {
+
+                    playerView = PlayerView(context, playerViewModel?.player, viewConfig).apply {
                         keepScreenOn = true
                         player = playerViewModel?.player
                     }
