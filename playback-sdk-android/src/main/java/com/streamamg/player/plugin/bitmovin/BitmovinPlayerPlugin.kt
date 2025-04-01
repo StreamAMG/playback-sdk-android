@@ -143,8 +143,8 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
                     val viewConfig = PlayerViewConfig(
                         uiConfig = UiConfig.WebUi(
                             // Set URLs for the JavaScript and the CSS
-                            jsLocation = "file:///android_asset/bitmovinplayer-ui.js",
-                            cssLocation = "file:///android_asset/bitmovinplayer-ui.css"
+                            jsLocation = "file:///android_asset/bitmovinplayer-ui.min.js",
+                            cssLocation = "file:///android_asset/bitmovinplayer-ui.min.css"
                         )
                     )
                     playerView = PlayerView(context, playerViewModel?.player).apply {
