@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.Player
+import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.ui.FullscreenHandler
@@ -63,15 +64,16 @@ internal interface FullscreenListener {
 
 class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     private var playerView: PlayerView? = null
-    override val name: String = "Bitmovin"
-    override val version: String = "1.0"
+    override val name: String = "BitmovinPlayerPlugin"
+    override val version: String = "1.1"
     private val _eventFlow = MutableSharedFlow<Any>()
     override val events = _eventFlow.asSharedFlow()
     private var isListenerActive = true
 
     private var videoDetails: Array<PlaybackVideoDetails>? = null
     private var analyticsViewerId: String? = null
-    private var playerConfig = VideoPlayerConfig()
+    private var playerConfig: PlayerConfig? = null
+    private var videoPlayerConfig = VideoPlayerConfig()
     private var playerBind: Player? = null
         set(value) {
             field = value
@@ -82,11 +84,25 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
     private val fullscreen = mutableStateOf(false)
     private var playerViewModel: VideoPlayerViewModel? = null
 
+    init {
+        val defaultPlayerConfig = PlayerConfig(key = PlaybackSDKManager.bitmovinLicense)
+        defaultPlayerConfig.playbackConfig.isAutoplayEnabled = true
+        this.playerConfig = defaultPlayerConfig
+    }
+
     override fun setup(config: VideoPlayerConfig) {
-        playerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
-        playerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
-        playerConfig.playbackConfig.fullscreenRotationEnabled = config.playbackConfig.fullscreenRotationEnabled
-        playerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
+        videoPlayerConfig.playbackConfig.autoplayEnabled = config.playbackConfig.autoplayEnabled
+        videoPlayerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
+        videoPlayerConfig.playbackConfig.fullscreenRotationEnabled = config.playbackConfig.fullscreenRotationEnabled
+        videoPlayerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
+    }
+
+    override fun updatePlayerConfig(newConfig: PlayerConfig?) {
+        playerConfig = newConfig
+    }
+
+    override fun getPlayerConfig() : PlayerConfig? {
+        return playerConfig
     }
 
     @Composable
@@ -111,7 +127,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         val configuration = LocalConfiguration.current
 
 
-        if (playerConfig.playbackConfig.backgroundPlaybackEnabled) {
+        if (videoPlayerConfig.playbackConfig.backgroundPlaybackEnabled) {
             if (Build.VERSION.SDK_INT >= 33) {
                 RequestMissingPermissions { granted ->
                     playerViewModel?.updatePermissionsState(granted, context)
@@ -122,7 +138,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         }
 
         DisposableEffect(videoDetails) {
-            playerViewModel?.initializePlayer(context, playerConfig, videoDetails, entryIDToPlay, authorizationToken, analyticsViewerId)
+            playerViewModel?.initializePlayer(context, videoPlayerConfig, videoDetails, playerConfig, entryIDToPlay, authorizationToken, analyticsViewerId)
             playerBind = playerViewModel?.player
             onDispose {
                 if (isJetpackCompose) {
@@ -169,7 +185,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
                 update = { view ->
                     if (isReady?.value == true) {
                         view.player = playerViewModel?.player
-                        if (playerConfig.playbackConfig.fullscreenEnabled)
+                        if (videoPlayerConfig.playbackConfig.fullscreenEnabled)
                             playerView?.setFullscreenHandler(fullscreenHandler)
                         playerView?.invalidate()
                         playerViewModel?.updateBackgroundService(context)
@@ -177,7 +193,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
                 }
             )
 
-            if (playerConfig.playbackConfig.fullscreenRotationEnabled)
+            if (videoPlayerConfig.playbackConfig.fullscreenRotationEnabled)
                 DetectRotationAndFullscreen(playerView) { isFullscreen ->
                     if (isFullscreen) {
                         playerView?.enterFullscreen()
