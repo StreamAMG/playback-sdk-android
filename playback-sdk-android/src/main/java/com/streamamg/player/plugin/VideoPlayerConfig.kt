@@ -14,5 +14,6 @@ data class PlaybackConfig(
     var autoplayEnabled: Boolean = true,
     var backgroundPlaybackEnabled: Boolean = true,
     var fullscreenRotationEnabled: Boolean = true,
-    var fullscreenEnabled: Boolean = true
+    var fullscreenEnabled: Boolean = true,
+    var skipBackForwardButton: Boolean = false
 )
