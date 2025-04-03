@@ -95,6 +95,7 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
         videoPlayerConfig.playbackConfig.backgroundPlaybackEnabled = config.playbackConfig.backgroundPlaybackEnabled
         videoPlayerConfig.playbackConfig.fullscreenRotationEnabled = config.playbackConfig.fullscreenRotationEnabled
         videoPlayerConfig.playbackConfig.fullscreenEnabled = config.playbackConfig.fullscreenEnabled
+        videoPlayerConfig.playbackConfig.skipBackForwardButton = config.playbackConfig.skipBackForwardButton
     }
 
     override fun updatePlayerConfig(newConfig: PlayerConfig?) {
@@ -156,30 +157,40 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    val viewConfig = PlayerViewConfig(
-                        uiConfig = UiConfig.WebUi(
-                            // Set URLs for the JavaScript and the CSS
-                            jsLocation = "file:///android_asset/bitmovinplayer-ui.min.js",
-                            cssLocation = "file:///android_asset/bitmovinplayer-ui.min.css"
+                    if (videoPlayerConfig.playbackConfig.skipBackForwardButton) {
+                        // Custom Bitmovin Player UI from Web (JS and CSS files)
+                        val viewConfig = PlayerViewConfig(
+                            uiConfig = UiConfig.WebUi(
+                                // Set URLs for the JavaScript and the CSS
+                                jsLocation = "file:///android_asset/bitmovinplayer-ui.min.js",
+                                cssLocation = "file:///android_asset/bitmovinplayer-ui.min.css"
+                            )
                         )
-                    )
 
-                    playerView = PlayerView(context, playerViewModel?.player, viewConfig).apply {
-                        keepScreenOn = true
-                        player = playerViewModel?.player
-                    }
+                        playerView =
+                            PlayerView(context, playerViewModel?.player, viewConfig).apply {
+                                keepScreenOn = true
+                                player = playerViewModel?.player
+                            }
 
-                    val javascriptInterface = object : Any() {
-                        @JavascriptInterface
-                        fun closePlayer(data: String): String? {
-                            Log.d("PlaybackSDK", "Close button pressed")
-                            return null
+                        val javascriptInterface = object : Any() {
+                            @JavascriptInterface
+                            fun closePlayer(data: String): String? {
+                                Log.d("PlaybackSDK", "Close button pressed")
+                                return null
+                            }
+                        }
+
+                        val customMessageHandler = CustomMessageHandler(javascriptInterface)
+                        // Set the CustomMessageHandler to the playerView
+                        playerView?.setCustomMessageHandler(customMessageHandler)
+                    } else {
+                        // Default Bitmovin Player UI
+                        playerView = PlayerView(context, playerViewModel?.player).apply {
+                            keepScreenOn = true
+                            player = playerViewModel?.player
                         }
                     }
-
-                    val customMessageHandler = CustomMessageHandler(javascriptInterface)
-                    // Set the CustomMessageHandler to the playerView
-                    playerView?.setCustomMessageHandler(customMessageHandler)
 
                     playerView!!
                 },
