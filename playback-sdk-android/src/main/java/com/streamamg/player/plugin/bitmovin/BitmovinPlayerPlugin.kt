@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.util.Log
+import android.webkit.JavascriptInterface
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +35,9 @@ import com.bitmovin.player.api.PlayerConfig
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.ui.FullscreenHandler
+import com.bitmovin.player.api.ui.PlayerViewConfig
+import com.bitmovin.player.api.ui.UiConfig
+import com.bitmovin.player.ui.CustomMessageHandler
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -151,10 +156,31 @@ class BitmovinPlayerPlugin : VideoPlayerPlugin, LifecycleCleaner {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { context ->
-                    playerView = PlayerView(context, playerViewModel?.player).apply {
+                    val viewConfig = PlayerViewConfig(
+                        uiConfig = UiConfig.WebUi(
+                            // Set URLs for the JavaScript and the CSS
+                            jsLocation = "file:///android_asset/bitmovinplayer-ui.min.js",
+                            cssLocation = "file:///android_asset/bitmovinplayer-ui.min.css"
+                        )
+                    )
+
+                    playerView = PlayerView(context, playerViewModel?.player, viewConfig).apply {
                         keepScreenOn = true
                         player = playerViewModel?.player
                     }
+
+                    val javascriptInterface = object : Any() {
+                        @JavascriptInterface
+                        fun closePlayer(data: String): String? {
+                            Log.d("PlaybackSDK", "Close button pressed")
+                            return null
+                        }
+                    }
+
+                    val customMessageHandler = CustomMessageHandler(javascriptInterface)
+                    // Set the CustomMessageHandler to the playerView
+                    playerView?.setCustomMessageHandler(customMessageHandler)
+
                     playerView!!
                 },
                 update = { view ->
