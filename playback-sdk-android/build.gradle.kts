@@ -24,7 +24,7 @@ plugins {
 }
 
 group = "com.streamamg"
-version = "1.1.3"
+version = "1.1.4"
 
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
