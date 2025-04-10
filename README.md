@@ -111,8 +111,8 @@ Example:
 ```kotlin
 // Initialize SDK with the settings
 PlaybackSDKManager.initialize("<API_KEY>") { license, error ->
-    // Register default layer plugin 
-    val customPlugin = BitmovinVideoPlayerPlugin()
+    // Register default player plugin 
+    val customPlugin = BitmovinPlayerPlugin()
     VideoPlayerPluginManager.registerPlugin(customPlugin)
     // Handle error as SDKError
 }
