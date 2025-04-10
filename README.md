@@ -112,7 +112,7 @@ Example:
 // Initialize SDK with the settings
 PlaybackSDKManager.initialize("<API_KEY>") { license, error ->
     // Register default layer plugin 
-    val customPlugin = BitmovinVideoPlayerPlugin()
+    val customPlugin = BitmovinPlayerPlugin()
     VideoPlayerPluginManager.registerPlugin(customPlugin)
     // Handle error as SDKError
 }
