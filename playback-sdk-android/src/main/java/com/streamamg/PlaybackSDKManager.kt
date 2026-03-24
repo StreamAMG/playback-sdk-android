@@ -52,6 +52,7 @@ object PlaybackSDKManager {
     internal var baseURL = "https://api.playback.streamamg.com/v1"
     internal var bitmovinLicense: String = ""
     internal var analyticsLicense: String? = null
+    internal var resumeEnabled: Boolean = false
     private var userAgent: String? = null
 
     val playbackSdkVersion = BuildConfig.SDK_VERSION
@@ -174,8 +175,10 @@ object PlaybackSDKManager {
 
                 val bitmovinLicense = playerInfo?.player?.bitmovin?.license
                 val analyticsLicense = playerInfo?.player?.bitmovin?.integrations?.mux?.envKey
+                val resumeEnabled = playerInfo?.player?.bitmovin?.integrations?.resume?.enabled ?: false
 
                 this@PlaybackSDKManager.analyticsLicense = analyticsLicense
+                this@PlaybackSDKManager.resumeEnabled = resumeEnabled
 
                 this@PlaybackSDKManager.bitmovinLicense = bitmovinLicense ?: run {
                     completion(null, SDKError.MissingLicense)

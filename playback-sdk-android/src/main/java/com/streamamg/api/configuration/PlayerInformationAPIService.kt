@@ -77,7 +77,8 @@ internal data class Bitmovin(
 @Serializable
 internal data class Integrations(
     val mux: Mux?,
-    val resume: Resume?
+    // Some playback types (e.g. FUSION) never include the `resume` object.
+    val resume: Resume? = null
 )
 
 @Serializable
@@ -88,7 +89,8 @@ internal data class Mux(
 
 @Serializable
 internal data class Resume(
-    val enabled: Boolean?
+    // `enabled` can also be missing inside `resume`.
+    val enabled: Boolean? = null
 )
 
 @Serializable

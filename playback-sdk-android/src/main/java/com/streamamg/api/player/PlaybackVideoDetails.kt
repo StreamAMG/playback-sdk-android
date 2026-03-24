@@ -13,5 +13,8 @@ data class PlaybackVideoDetails(
     var url: String?,
     var title: String?,
     var thumbnail: String?,
-    var description: String?
+    var description: String?,
+    // Resume position provided by the playback API (unit is assumed to match Bitmovin seek seconds).
+    // Only used when the backend RESUME flag enables it.
+    var playFrom: Int? = null
 )

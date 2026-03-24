@@ -55,7 +55,8 @@ internal fun PlaybackResponseModel.toVideoDetails(): PlaybackVideoDetails? {
             url = this.media?.hls,
             title = this.name,
             thumbnail = this.coverImg?._360,
-            description = this.description
+            description = this.description,
+            playFrom = this.playFrom
         )
     }
     return null

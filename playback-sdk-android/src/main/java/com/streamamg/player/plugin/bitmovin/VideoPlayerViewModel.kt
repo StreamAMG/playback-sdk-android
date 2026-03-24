@@ -141,8 +141,18 @@ class VideoPlayerViewModel : ViewModel() {
             val playlistOptions = PlaylistOptions(preloadAllSources = false)
             val playlistConfig = PlaylistConfig(sources, playlistOptions)
             player?.load(playlistConfig)
-            player?.playlist?.sources?.firstOrNull { it.config.metadata?.get("entryId") == this.entryIDToPlay }?.let { sourceToPlay ->
-                player?.playlist?.seek(sourceToPlay, 0.0)
+            // If RESUME is enabled by the backend, seek to the API-provided `playFrom` offset.
+            // Otherwise, start from 0.0 (Bitmovin default).
+            val targetEntryId = this.entryIDToPlay ?: videoDetails.firstOrNull()?.videoId
+            val startPositionSeconds = if (PlaybackSDKManager.resumeEnabled) {
+                targetEntryId?.let { entryId ->
+                    videoDetails.firstOrNull { it.videoId == entryId }?.playFrom?.toDouble() ?: 0.0
+                } ?: 0.0
+            } else {
+                0.0
+            }
+            player?.playlist?.sources?.firstOrNull { it.config.metadata?.get("entryId") == targetEntryId }?.let { sourceToPlay ->
+                player?.playlist?.seek(sourceToPlay, startPositionSeconds)
             }
         }
         currentVideoDetails = videoDetails
